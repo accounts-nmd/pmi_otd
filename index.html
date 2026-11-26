@@ -1,0 +1,1385 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>PMI Sales</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<style>
+/* Layout: white app bar with blue underline tabs, quiet filter strip, open white canvas; tiles → charts → tables. Single light theme by choice. */
+:root{
+  color-scheme:light;
+  --accent:#1f62c4; --accent-2:#2a78d6; --accent-bg:#eef4fd; --accent-line:#cfe0f7;
+  --bg:#ffffff; --strip:#f7f9fc; --panel:#ffffff; --ink:#0f1a2b; --ink-2:#47536a; --ink-3:#7c879b;
+  --line:#e4e9f0; --line-2:#eff2f7; --hover:#f5f8fd;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --tgt:#0f1a2b;
+  --good:#15804a; --good-bg:#e4f5eb; --warn:#9a6200; --warn-bg:#fcf1dc; --bad:#c03636; --bad-bg:#fce8e8;
+  --heat:42,120,214;
+  --f-display:"Sora","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num,td.n,th.n{font-variant-numeric:tabular-nums}
+.mast{background:var(--bg);color:var(--ink);border-bottom:1px solid var(--line)}
+.mast .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:16px 6px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:12.5px;letter-spacing:.03em;flex:none}
+.brandlogo{height:40px;width:auto;flex:none;display:block}
+.mast .wrap>div:not(.right){padding-left:14px;border-left:1px solid var(--line)}
+.mast h1{margin:0;font-family:var(--f-display);font-size:19px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.mast .sub{color:var(--ink-3);font-size:12px;letter-spacing:.02em}
+.mast .right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.mast .pill{background:var(--strip);border-color:var(--line);color:var(--ink-2)}
+.mast .pill.live{color:var(--good);background:var(--good-bg);border-color:transparent}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:none;border:0;color:var(--ink-2);font:600 13.5px var(--f-body);padding:10px 12px 11px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--strip);border-bottom:1px solid var(--line)}
+.filters .wrap{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;padding-block:10px}
+.fld{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3);font-weight:600}
+select,input[type=search],input[type=number],input[type=text],input[type=date]{font:500 13px var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0}
+select:hover,input:hover{border-color:var(--accent-line)}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+.seg button{border:0;background:none;font:600 12.5px var(--f-body);color:var(--ink-2);padding:5px 11px;border-radius:7px;cursor:pointer}
+.seg button:hover{background:var(--hover)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.chk input{accent-color:var(--accent)}
+.asof{margin-left:auto;font-size:12px;color:var(--ink-3)}
+main{padding-block:22px 56px}
+.view{display:grid;gap:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px;display:grid;gap:4px;align-content:start}
+.tile .lbl{font-size:12px;color:var(--ink-3);font-weight:600}
+.tile .val{font-family:var(--f-display);font-size:25px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .val small{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--ink-3);margin-left:4px;letter-spacing:0}
+.tile .foot{font-size:12.5px;color:var(--ink-2);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tile.hero{background:var(--accent-bg);border-color:var(--accent-line)}
+.tile.hero .lbl{color:var(--accent)} .tile.hero .val{color:var(--accent)}
+.meter{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;border-radius:3px;background:var(--accent-2)}
+.tile.hero .meter{background:#fff}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:5px;padding:1px 6px;font-variant-numeric:tabular-nums}
+.chip.up{color:var(--good);background:var(--good-bg)} .chip.dn{color:var(--bad);background:var(--bad-bg)} .chip.mid{color:var(--warn);background:var(--warn-bg)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid32{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px}
+@media (max-width:900px){.grid2,.grid32{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.card h2{margin:0;font-family:var(--f-display);font-size:15px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.card .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.card .hd .note{font-size:12px;color:var(--ink-3)}
+.card .hd .sp{margin-left:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-bottom:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.legend i.ln{height:2px;width:16px;border-radius:0}
+.legend i.dash{height:0;width:16px;border-top:2px dashed var(--tgt);background:none}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{fill:var(--ink-3);font:11px var(--f-body);font-variant-numeric:tabular-nums}
+svg.chart .grid{stroke:var(--line-2);stroke-width:1}
+svg.chart .axis{stroke:var(--line);stroke-width:1}
+svg.chart .lab{fill:var(--ink-2);font-weight:600;paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round}
+.tip{position:fixed;pointer-events:none;z-index:50;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);min-width:150px;max-width:280px}
+.tip b{display:block;font-size:12.5px;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums}
+.tip .r i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line-2);white-space:nowrap}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;background:var(--strip);color:var(--ink-3);font-weight:600;position:sticky;top:0}
+th.sort{cursor:pointer;user-select:none} th.sort:hover{color:var(--ink)}
+th.n,td.n{text-align:right}
+tbody tr:hover{background:var(--hover)}
+tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
+td.wrap-t{white-space:normal;min-width:220px}
+td .bar{display:inline-block;height:8px;border-radius:2px;background:var(--s1);vertical-align:middle;margin-right:8px}
+.muted{color:var(--ink-3)}
+.mono{font-family:var(--f-mono);font-size:12px}
+.click{cursor:pointer}
+.btn{font:600 13px var(--f-body);border-radius:8px;padding:7px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.gold{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{border-radius:8px;padding:10px 12px;font-size:13px;border:1px solid var(--line);background:var(--panel)}
+.msg.ok{background:var(--good-bg);color:var(--good);border-color:transparent}
+.msg.err{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.msg.info{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--ink-2);cursor:pointer}
+.drop:hover,.drop.on{border-color:var(--accent);background:var(--accent-bg)}
+.tgt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.tgt-grid label{display:grid;gap:4px;font-size:12px;color:var(--ink-2);font-weight:600}
+.tgt-grid input{width:100%}
+.heat td.n{font-size:12.5px}
+.more{display:flex;justify-content:center;padding:10px}
+.lines td{background:var(--line-2);font-size:12.5px}
+.sec-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line);margin-top:6px}
+.sec-hd h2{margin:2px 0 0;font-family:var(--f-display);font-size:20px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.eyebrow{font-size:12px;font-weight:600;color:var(--accent)}
+.mseg{flex-wrap:wrap}
+.mseg button{min-width:42px}
+.seg button:disabled{color:var(--ink-3);opacity:.45;cursor:not-allowed;background:none}
+.empty{padding:30px;text-align:center;color:var(--ink-3)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0}
+@media (max-width:560px){.tile .val{font-size:22px}.asof{margin-left:0;width:100%}.mast h1{font-size:17px}}
+@media (prefers-reduced-motion:no-preference){.view{animation:fade .25s ease-out}@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}}
+
+/* roles + sign-in cover */
+.pill.role{background:var(--strip);border-color:var(--line);color:var(--ink-2)}
+.pill.role.adm{background:var(--accent);border-color:var(--accent);color:#fff}
+body.signed-out .filters,body.signed-out .tabs,body.signed-out #srcPill{display:none}
+body.signed-out{background:var(--strip)}
+.cover{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);max-width:980px;margin:clamp(8px,4vh,40px) auto;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:0 20px 60px rgba(15,26,43,.10)}
+.cover-l{position:relative;padding:36px 36px 30px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(160deg,#1f62c4 0%,#174c9c 100%);color:#fff;overflow:hidden}
+.cover-l::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px;mask-image:linear-gradient(180deg,#000,transparent 90%)}
+.cover-l>*{position:relative;z-index:1}
+.cover-logo{align-self:flex-start;background:#fff;border-radius:10px;padding:8px 12px;height:58px;width:auto;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.cover-eyebrow{margin-top:10px;font-size:12px;font-weight:600;letter-spacing:.06em;color:#cfe0f7}
+.cover h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(34px,5vw,52px);line-height:1.02;letter-spacing:-.02em;color:#fff}
+.cover-sub{margin:0;color:#dbe7f8;max-width:42ch}
+.cover-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:auto 0 0;padding-top:14px;border-top:1px solid rgba(255,255,255,.2)}
+.cover-meta dt{font-size:11px;color:#cfe0f7}.cover-meta dd{margin:2px 0 0;font-weight:600;font-variant-numeric:tabular-nums}
+.cover-r{display:flex;align-items:center;justify-content:center;padding:36px 30px}
+.signin{width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.signin .lock{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);border-radius:99px;padding:3px 10px}
+.signin h2{margin:0;font-family:var(--f-display);font-size:24px;font-weight:600;letter-spacing:-.01em}
+.whos{display:grid;gap:10px}
+.who{display:grid;grid-template-columns:46px 1fr 18px;gap:12px;align-items:center;text-align:left;width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font:inherit;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.who:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 22px rgba(31,98,196,.12)}
+.who:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.who .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;color:#fff}
+.who.adm .ic{background:linear-gradient(135deg,#e0262d,#a3141a)} .who.vw .ic{background:linear-gradient(135deg,#2a78d6,#174c9c)}
+.who .ic svg{width:24px;height:24px}
+.who b{display:block;font-size:16px}.who small{display:block;font-size:12.5px;color:var(--ink-3)}
+.who .arr{color:var(--ink-3);font-size:20px}
+.who-sub{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 0 58px}
+.who-sub button{border-radius:99px;padding:5px 12px;font:600 12.5px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.as{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--line)}
+.as .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff}
+.as .av.adm{background:linear-gradient(135deg,#e0262d,#a3141a)}.as .av.vw{background:linear-gradient(135deg,#2a78d6,#174c9c)}
+.as div{display:flex;flex-direction:column;margin-right:auto;min-width:0}.as small{color:var(--ink-3);font-size:12px}
+.as button{background:none;border:0;color:var(--accent);font:600 12.5px var(--f-body);cursor:pointer;text-decoration:underline}
+.signin label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.signin input[type=password]{font-size:16px;padding:10px 12px;border-radius:10px}
+.btn.big{padding:11px;font-size:15px;border-radius:10px}
+.subh{margin:0;font-size:13px;font-weight:600;color:var(--ink-2)}
+.adduser{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px;align-items:end}
+.adduser label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+#userTbl input,#userTbl select{width:100%;min-width:140px}
+@media (max-width:760px){.cover{grid-template-columns:1fr}.cover-r{order:-1}.cover-l{padding:24px 22px}.cover-meta{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (prefers-reduced-motion:no-preference){.cover{animation:fade .45s ease-out}}
+
+/* ===== PMI theme: graphite press-shop shell, steel data, PMI red as the mark to hit ===== */
+:root{
+  --accent:#1f4e79; --accent-2:#2a6299; --accent-bg:#e7eef6; --accent-line:#c3d3e4;
+  --brand:#d8231b; --brand-bg:#fbe8e7;
+  --bg:#eceff3; --strip:#ffffff; --panel:#ffffff; --ink:#151b26; --ink-2:#465165; --ink-3:#727e91;
+  --line:#d8dee6; --line-2:#e8ecf1; --hover:#f3f6f9;
+  --s1:#1f4e79; --s2:#a9b5c3; --s3:#5f7f9e; --s4:#d0a43b; --tgt:#d8231b;
+  --good:#13784a; --good-bg:#e2f3e9; --warn:#875800; --warn-bg:#fbefd6; --bad:#b4231c; --bad-bg:#fbe6e4;
+  --graphite:#1b2330; --graphite-2:#222c3b;
+  --hatch:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 10px);
+  --f-display:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body{background:var(--bg);font-stretch:100%}
+body::before{background:var(--graphite)}
+/* header */
+.mast{background:var(--graphite) var(--hatch);color:#fff;border-bottom:0}
+.mast .wrap:first-child{padding-block:14px 10px}
+.brandlogo{background:#fff;border-radius:6px;padding:5px 10px;height:44px}
+.mast .wrap>div:not(.right){border-left-color:rgba(255,255,255,.16)}
+.mast .sub{color:#97a3b6;font-size:12.5px;letter-spacing:0}
+.mast h1{color:#fff;font-stretch:120%;font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+.mast .pill{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:#d3dae4}
+.mast .pill.live{background:rgba(60,207,142,.14);color:#86e3b6;border-color:transparent}
+.mast .pill.role{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:#d3dae4}
+.mast .pill.role.adm{background:var(--brand);border-color:var(--brand);color:#fff}
+.mast .btn{background:transparent;color:#e6ebf1;border-color:rgba(255,255,255,.25)}
+.mast .btn:hover{border-color:#fff}
+.mast .seg{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:2px}
+.mast .seg button{color:#c3ccd8;border-radius:5px}
+.mast .seg button:hover{background:rgba(255,255,255,.08)}
+.mast .seg button[aria-pressed="true"]{background:#fff;color:var(--graphite);box-shadow:none}
+.tabs{gap:2px;padding:0}
+.tabs button{color:#aab5c4;background:none;border:0;border-bottom:3px solid transparent;border-radius:0;padding:11px 15px 12px;margin:0;font:600 14px var(--f-body);font-stretch:108%}
+.tabs button:hover{color:#fff;background:none}
+.tabs button[aria-selected="true"]{color:#fff;background:none;border-bottom-color:var(--brand);box-shadow:none}
+.tabs button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+/* filter strip */
+.filters{background:#fff;border-bottom:1px solid var(--line);padding-top:0}
+.filters .wrap{padding-block:10px}
+.seg{background:var(--line-2);border:0;border-radius:7px;padding:2px}
+.seg button{border-radius:5px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--graphite);color:#fff;box-shadow:none}
+select,input[type=search],input[type=number],input[type=text],input[type=date]{border-radius:6px;border-color:var(--line)}
+.fld{color:var(--ink-2)}
+/* tiles */
+.tiles{gap:12px}
+.tile{border-radius:8px;border:1px solid var(--line);box-shadow:none;padding:16px 18px;position:relative;overflow:hidden}
+.tile .tic{width:30px;height:30px;border-radius:6px;display:grid;place-items:center;margin-bottom:6px;background:var(--line-2);color:var(--ink-2)}
+.tile .tic svg{width:17px;height:17px}
+.tile[data-ic="target"] .tic{background:var(--brand-bg);color:var(--brand)}
+.tile .lbl{font-size:12.5px;font-weight:600;color:var(--ink-3)}
+.tile .val{font-family:var(--f-display);font-stretch:112%;font-size:28px;font-weight:700;letter-spacing:-.015em}
+.tile.hero{grid-column:span 2;background:var(--graphite) var(--hatch);border-color:var(--graphite);color:#fff;box-shadow:none}
+.tile.hero::before,.tile.hero::after{content:none}
+.tile.hero .lbl{color:#a9b4c4;opacity:1}
+.tile.hero .val{color:#fff;font-size:46px;font-stretch:118%;font-weight:800}
+.tile.hero .val small{color:#a9b4c4}
+.tile.hero .foot{color:#d3dae4;opacity:1}
+.tile.hero .tic{background:rgba(255,255,255,.08);color:#fff}
+.tile.hero .meter{background:rgba(255,255,255,.14);height:6px}
+.tile.hero .meter i{background:var(--brand)}
+.tile.hero .chip.up{background:rgba(60,207,142,.18);color:#9ff0c6}.tile.hero .chip.dn{background:rgba(216,35,27,.3);color:#ffd2cf}.tile.hero .chip.mid{background:rgba(255,209,102,.18);color:#ffe3a3}
+.meter{height:6px;border-radius:3px}.meter i{border-radius:3px;background:var(--accent)}
+@media (max-width:560px){.tile.hero{grid-column:auto}.tile.hero .val{font-size:34px}}
+body.u-act .tile .val{font-size:22px}body.u-act .tile.hero .val{font-size:32px}
+/* cards, sections, tables */
+.card{border-radius:8px;box-shadow:none;padding:20px;border-color:var(--line)}
+.card h2{font-stretch:112%;font-size:16px;font-weight:700}
+.card .hd{padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--line-2)}
+.sec-hd{border-top:1px solid var(--line);padding-top:22px;margin-top:8px}
+.sec-hd h2{font-size:26px;font-stretch:118%;font-weight:800;letter-spacing:-.015em}
+.eyebrow{display:inline-block;background:none;padding:0;color:var(--brand);font-size:13px;font-weight:700;letter-spacing:0}
+.tbl-wrap{border-radius:6px}
+th{background:#f3f5f8;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--ink-2)}
+td .bar{height:8px;border-radius:2px;background:var(--accent)}
+.chip{border-radius:4px;padding:1px 7px}
+.btn{border-radius:6px}
+.btn.pri,.btn.gold{background:var(--graphite);border-color:var(--graphite);color:#fff;box-shadow:none}
+.btn.pri:hover{background:#0f141d}
+.mseg button[aria-pressed="true"]{background:var(--graphite);color:#fff}
+.legend i{border-radius:2px}
+svg.chart .grid{stroke:#e4e8ee;stroke-dasharray:none}
+@media (prefers-reduced-motion:no-preference){
+  svg.chart path[fill]:not([fill="transparent"]){transform-box:fill-box;transform-origin:bottom;animation:grow .55s cubic-bezier(.2,.7,.2,1) both}
+  svg.chart polyline{stroke-dasharray:3000;animation:draw 1.2s ease-out both}
+}
+@media (max-width:760px){.filters{position:static}}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes draw{from{stroke-dashoffset:3000}to{stroke-dashoffset:0}}
+
+/* ===== front page (sign-in) ===== */
+body.signed-out .mast{display:none}
+body.signed-out,body.signed-out::before{background:var(--graphite)}
+body.signed-out main{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-block:24px;position:relative}
+body.signed-out .empty{color:#c3ccd8}
+body.signed-out .empty img{background:#fff;border-radius:6px;padding:8px 12px;box-sizing:content-box}
+.cv-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--graphite) var(--hatch);overflow:hidden}
+.cv-bg::after{content:"";position:absolute;left:-10%;right:-10%;bottom:14%;height:5px;background:var(--brand);transform:rotate(-8deg);opacity:.9}
+.cv-bg i{display:none}
+.cover{position:relative;z-index:1;max-width:1080px;width:100%;margin:clamp(8px,3vh,32px) auto;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);border-radius:10px;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 80px rgba(0,0,0,.45);backdrop-filter:none}
+.cover-l{background:var(--graphite-2) var(--hatch);color:#fff;padding:36px 40px 30px;display:flex;flex-direction:column;gap:18px}
+.cover-l::after{display:none}
+.cv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cover-logo{background:#fff;border-radius:6px;padding:8px 12px;height:56px;width:auto;box-shadow:none;align-self:auto}
+.cv-live{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#cfd7e2;border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:5px 11px;background:transparent}
+.cv-live i{width:8px;height:8px;border-radius:50%;background:#3ccf8e}
+.cover-eyebrow{margin-top:10px;color:#97a3b6;font-size:14px;font-weight:600;letter-spacing:0}
+.cover h1{margin:0;font-family:var(--f-display);font-stretch:125%;font-weight:800;font-size:clamp(46px,6.4vw,80px);line-height:.92;letter-spacing:-.025em;color:#fff}
+.cover-sub{margin:0;color:#c3ccd8;max-width:40ch;font-size:15px}
+.cv-chart{background:none;border:0;border-top:1px solid rgba(255,255,255,.14);border-radius:0;padding:16px 0 0}
+.cv-chart svg{width:100%;height:auto;display:block}
+.cv-chart .cb{fill:#dde3ec}
+.cv-chart .cb.fut{fill:rgba(255,255,255,.08)}
+.cv-chart .cb.now{fill:var(--brand)}
+.cv-months{display:grid;grid-template-columns:repeat(12,1fr);font-size:11px;color:#8f9bad;text-align:center;padding:4px 0 0}
+.cv-cap{font-size:12.5px;color:#97a3b6;margin:0 0 8px}
+.cover-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:auto 0 0;padding-top:14px;border-top:1px solid rgba(255,255,255,.14)}
+.cover-meta dt{font-size:12px;color:#8f9bad}.cover-meta dd{margin:2px 0 0;font-weight:600;color:#fff}
+.cover-r{background:#fff;padding:44px 38px;display:flex;align-items:center;justify-content:center}
+.signin .lock{align-self:flex-start;background:none;color:var(--brand);padding:0;border-radius:0;letter-spacing:0;text-transform:none;font-size:13.5px;font-weight:700}
+.signin h2{font-family:var(--f-display);font-stretch:115%;font-weight:800;font-size:28px;letter-spacing:-.015em;margin:0}
+.who{border-radius:8px;padding:15px;border:1px solid var(--line);transition:border-color .15s ease,background .15s ease}
+.who:hover{transform:none;border-color:var(--graphite);background:var(--hover);box-shadow:none}
+.who .ic{border-radius:8px}
+.who.adm .ic{background:var(--brand)}.who.vw .ic{background:var(--graphite)}
+.as{border-radius:8px}
+.as .av.adm{background:var(--brand)}.as .av.vw{background:var(--graphite)}
+.btn.big{background:var(--graphite);color:#fff;border:0;box-shadow:none;padding:12px;font-size:15px;border-radius:8px}
+.btn.big:hover{background:#0f141d}
+.cv-mlogo{display:none;height:40px;width:auto;align-self:flex-start}
+body.signed-out .useg{display:none}
+@media (max-width:760px){.cover{grid-template-columns:1fr}.cover-r{order:-1;padding:28px 22px}.cv-chart{display:none}.cover-l{padding:24px 22px}.cv-mlogo{display:block}}
+@media (prefers-reduced-motion:no-preference){
+  .cv-chart .cb{transform-box:fill-box;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}
+}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <img class="brandlogo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABsCAIAAAAKUfukAABOO0lEQVR42u19d5xVRdJ2VYeTz70DMwxDhgFBoogZTGDAVURQV0VUzMii4qor6ru65tc1gAoGxBV1VVBRRASzKwKiooCAkRxnSAOT595zuvv7o+89jDCJJOz3Tts/HLhzT+yqrnrqqSpUSkH9qB//VwepfwT1o14A6kf9qBeA+lE/6gWgftSPegGoH/Xj/8pg9Y+gfhzkQwOVdUArFcKO/+o4sB4GrR8H+dJHxN38npQSCCH1AlA//vvWfLQspRSUMgAoKi7YsmVLaWkppXTHwk39tkJAAFQAUkjGacPMho2yGiFwKYUCBKUQsQZhqDeB6sdBqPdRKUkpW7V62euvvzpr1pdr164rKS4hlCCoKqQFAAClEKZpZmdnH3ZY94suGnTccccrQCUVpVQpVd02Ur8D1I+DakgA0AbMRx9Nv+f+u7//bj4oYBQQQSkAklrvqV0AASSAAqUACSgFQoIQ0LxpznXD/jJ8+AjP86WUhJB6Aagf/x3KX0pJKf3004+uu+7q1WvWOS4lEhBUiEiVQgRZaSVr60cpJRQAEgQgFIiCZFIAsltuvf322+/khkGwWgGoh0Hrx8Gk/6UkhKxZs/KB++9ZvWad51IppVRSKqVAhgigFCillIL01IMqRYQUqEIlpJAmpwDimWee+ujDGZTQGrR8vQDUj4NI/ev/v/zSS3O//tp1qJACAQCJBFRSKSlDqVQIIBRKhVIpoSegAFCKSEUVVQhJJZlBCwuLJk56raSkiBAEUACq3gmuHwfp0ldKKgWU0u/nf/PKqy8jRQWASts41JYqi3BLYQigUFFQKYQHUiipQkhQLJJBaUAlI0BClIpz/Hbe18uW/dq9+1FSSkKwXgDqx0E6hFCIqqysbOzTY1etWm07TEpJFSKAqeS5XqNTGmQSEEmCCiVTEhBRKZApN4AKACoXlZVP2rR5LROCKBJKJKqwcPuatau7dz+quvPWC0D9OMDaHwC198u58d77706dOtU0GQAgKA3yHE6dS+KZrWQSpFSMAShUoEARAKL09oEoJUBFpmV+wvhKFYBChUgAhBBlZRWVfOZ6AagfB9fqVxqK5Jzn5+c9/dTY0pJibjGQUgEIhdkCzs5o2BxkhUxwRBCoEAAUkUoCCABUwAVIqSoM6+uy0tVh0uRECSlRhVJ5tpWZmVXDFdQLQP04sAIgtQAQAq+++tLcObMsiwZKISiiCIbY0/FP8CwaJhAYAAIigJKKIEoAhRIVgFQSKawGNr2wuBgDRUAiKkApoVmzFm3btoPq+RT1KFD9OIADAYhSilK2eMkP48ePA6aoACZQEoVStgXWPx7PEkIBoAJUgKhQKSakRAwRFQIXSlCVYPzjou0/hKWKsZCgJEAAhFSnnnZq61ZtaogE1wtA/TigW4BEAAzD5NNPj1mxfDUxSECRgOQhOiGclpHRg5sYCqKAKMAUEQKBglJAJaFKAgrF2UIlPiraFhIaEBQAXGGYkG3b5F580WBSHweoHwfduk8znEMZIuKXs2ZOnvyWaREikEoJqFDioZZzWsz1RCAJYAr2TG0bEkFTnlEiAN8O5pSCgpUqQQgSUIYgQgJQdsUVVx522BFCiBr4pOxgfTQHNUEDEXefo1s/fvcAUwoYiRDirbfe3L692HOpkhKUQiC+gjPjGe1IIAIEZBKVjFB8BUBAARClElRxYn5fFn5RVhRSImjIFViKbgvF0cccc+kllwOgUvJgd4LT8WwFgJQS2BMK+AG4ZillJAkH5wVr2zeygNP0ev1DdMnqQBkCmvaTn7/u+/nfU4JKASiFSDDAY1y/j22ZFUkFTIECkiK8pYwWCRKlQKCAa6icUpi3DUNKQAKEBBNCuqZ93dBhTZo0C4Kg5sQAdjC8pDAICSWa7Z1IVGzcuGnbtm3Rpdcls+EP2zGklIZhZGdnZ2Vl6QsWQugXWet17nSRf4DMVNIslc8LAFok8GB4+1u2bMlbv4ExpZQCAqHEBoT1aRBvpgQqJggBoggSVCBRKVCAiEAQVEilgd7sksJ5FcXIqUJBJShGSgNxwTlnDew/UCnFGKv5ObMDfv9KKW7wikRizpw5n3/+n3nfzluzdu2mTfnJICBI0i/sYDF7tAA0a9asQ4cOxxxzTO/evbt06UIpFULUfI87SbLeQPafNZU2JFPpIDudQgihFBCiTy3/+NeuZU9JiZQKIRIV5fqDEFFQBAFlQuYTThkKqoTOcFSoEBWiIkCkkgiCGCtE8Pb2jYUmcgUSgBAMA5HTJHvoX/7iOJ4UktBatNKBpEMrlUrinPv1N089NebDDz7avn1LWkkxRFDa6a/jBaZesdh/FnxkUei1CwCtWrW68MILr7nmmnbt2u2avxeRe6PdI5lMCiEopZZlVRaP6Ft7KQyVrlBpY1IIuX37toKCreXlpYTQWCzeoEFD3/cjSdDiUQNQuB/euyb9K0rp2rWr7rn37kmTXqNEpV61YkbImoJswZmlqEApQQKQCAECBFCEKAWAK1RyDSQlEgAJqBBpIiFuueVv9933IChSQxrAgRcAvYaCIHj22ef/+ehj+RvWAHDOmAaGEaONu64Wqt7ZAeskAHvgsUVrKxIhpVQQBFLK7t2733fffWeffbbeB/RHSilCCCGktLR0wYIFX38997ffflu7dl0ikXBdt3nz5u3bt+/Vq1e3bl0ty678xZpT+Gp1S5RSlFJE3LQp//PPP//0009/+eWXbdu2lpSWMEpjsQaNGjXq0aPH6af3Pe6442zbCcNA3xAAVM453H/rXwghRGgY1uLFC4bfMHzuV3Nti6RSYQCJAqJYCAIUIKAgAgEAiAKlVSICAFKQaAhIGMhA0lAEDAmSRIXo3LXLW5PfyW19iFY0tb/cAyIA2n0sLy+7794HR40eHQQBN0wpFUiV8nKIFvTd10ko67CgCdRpZ5E1CExllZlIJBo3bvzQQw8NGTIkMng458XFxdOmTXv99dfnzftmy5Yt8veXxhhmZzc+4YQTBg8efNppp1mWE4ahFq09EwApRRhKw+DFxUVvTJo44aUJC39YUFaaRAKEAEFAACFBSiAIGQ0zTj6593XXXdendx+lNBGf1kVl7rFJlj6wDMOQELohb93gSy6e9eVXns9BCc3wkQhSIaAiCqlme2Lq+WOkD0GFFAQBK4mSYAiKSImEKEmCQI0a/cSw667X0GedHqM6EEMIIYR46KGHGTUpMRl3CLUINRm1GbUoGmmtj7s/6zKInog1z5Re1MtCP1A9DMOwLMs0TcMwOOeWZSFiVlbW22+/rZSqqKhQSv3444+DBw+2bRsAGKOmySzLsG1TT9M0TNNgjABAgwYZ1w8ftnr1KqWUtpH27KkGQVIptXTp0suGDDYtigRMi9gOcz3uuNSxqetQz2Ouw1yXWBYgQlajjAcevKeoaJsUQu9m+/nNSynDMExKKf5221+BQCzDcH30fPBjEI+RjDjN8JmdQd04jcWIHyfxDJrRgGY0oBkZtEEGaZBBMmLEixEng7hx9OPoxcGPoR9DymDIkEHFxYVCCCECKYVStd/OH70DSCmlFIzxae/PuPTSIYWFhZQypZQu6qKkkiph215GRoxSEnlL+w+H3l0rCADCMNy2bVtFRQXnPDJaEDGRSHTq1Om1117r3r37rFmzRowYsWDBAtPkhBApf5eNoUABSESCCIhESplIhKee0mf06Ce6dOkqhKCU1PHG0w6JUgoYYz///NNf/nLdFzNnWRYlhKR8FUQEmVInSqW3VUKQJsOkFHDFFZc/9vhoz40DqD3bfOqmZyUAhKEwDOOrr2aef/55RYXbGEOhBCgAIEGQul6pLQDtAlZ+EgiggDEwKFUKFCodHJOKKgHnnnveI4883qRJs0rUfzzoTCAhBCGYn7/xggsGz579BeO2NocIYhAk4/FY//79+vXr165dW9M0pFT7AyTZY4cvbbmV//rrr1OmTPnwww8TiYQuOqAt/iAIevXq1bNnz/fem/rLL79allEJfcfIhVCgCOpcVpXeYaCsNHnSSSe88MK/2rU7ZLeuUEoppaSUrF279sorr/jss/84Lq+MfiJSKYUQAgEYI5SS6ENCUEooLw9vvmXEgw/8L+fmfkOlFICQEpSCZFBx5eWXvTV5SsynSgpN6ZcKu3U5rGmz5kpJxB0mqgJNjFYAQJAmk8kFC77fVrCZMqI/k6AM7tx888jrh18fj2fU0fQ/YCZQGIZSynvvvZ+gQZmtJ+MOAMtt027SpDcSiQr13zCKioqeffbZpk2bEkJM0+Scc84Nw4jse8syTJMZBjNNw7LMdIAPCElZw4wRyzJMk1sWt23muCYADB48qLBwe+TO1u2RBmEYlpeXDR16DSI4LjctYtnUsqllM8aBUsjKymiT27J1m+a+ZyKCZYLrUsdBx0bXRdsmtm28/Mq/tHW6n0wfIQJtpP371Zc9z/A8EothzIdYBjE4/OmM3qtXrygrKyktKSkrK/39LC4rKy4tLSopKSotLRkzZnQsxmIxjMVIPIOaFnQ/vFN+/gZtfIZhuFsX9gfFASLTn3P+7bffjn9+vAKFaWUsRJCZlfXEE0+c3f8sKUUYJgk5GHnakU5VSnmed91115mmedNNN5WVlRFC9KemaehQq1Iy2luTybBVq1Ynnnhit27dHMcpLi5esGD+rFlfbtiwgXOuNNFFCstmkydPPvnkk6+++loNUNYluKbDPa+9Num11141TE38SkPCIjykXfuBA8874YQTmjdvFgTB0mW/fvThhzOmTy8oKOAGBSU1YFpennzqiSd6n3xKixatwjBkbN8/fymBErp+w9qnn34ikUg6DhFSIaAIVCzu33TTrS1btpFSEFKt/pZCEEoNw5BSUQZKKVBECIhnZGhDutaw1wHbAaSUQRCEYVhYWHjeeX8GQMZsQi3KLMpMQugdd/6P3h+ECJQSB/8OIKUUQiQSiUsvvRQAtENsGIZhcNNkpskNg+nJGLvkkkvmz5+fSCSir5eVlX355ZdnnHE6Y9S2TdPipkVshwPC8cf33LgxTwgRBEFd4ASl1KJFCzp3bk8Z2C7Tit92OONw3vnn/PjTkl185cSM6VO7devEOLgus23iOMR1KWM4avRj2hHfD96wDMNQSHHffXdxE2Jx4sfQ8zAWY4zB1dcMSSQqgiAIgkBKUWmG6Sk1eLp69fJjju1uWpDRgMZimJHBKMPz/zxQX/MeXPb+FwCplFJCimQyqZR68cUJpmFTYjJqEWpRZgPAsT2PW7d+nb5HpWRdnPeDYejF9/7772dkZDDG0jLATZNrATBNgzE6bNiwwsJCHTSoPJRS69atO/fcAZSiZXPTIqZFDIu6nvXaa6/p36+LHJaUFF940flIwHGZZRPTorbDKYN+Z5+xYcM6pVQikQzCMNArKAz1i5g9e1br3OaMo+tyx0HPY4DQp89J27Zt37OVVJdnNe+7b9rkNjdtjMXR89D3mWnCoR1yf/hhoVI6ShimF8DOU1NO7rv/76YF8QwSy8BYHOMZlBvw6GOP6FMcdAKQfpQyFIFSctmy5V06dwOgVKt/aiMxYrGMN996SymVDJL7H4bb9y91+fLlnTp1QkTTtAzDMAymdwDbNhGhd+/emzdvjvDNtCYTQqQ0wk8/LenUqQOlYDvMsqnjckC4+uorg2qfRgrdi7aIJ58cZTuGZWvdT22HMQ7t2+fOX/CdUiqZDMLwd0sjDEP9xVGjHmUcXYc5DrouNU1onJP59ddz9e/s261SCFFeXjLk8sGEQSyD+D74PvoxapjwyCMPaWkXQgghq8RN9QV/+83c1rlNbAficRKLQTyDGhZ07dZh6bJf99h72f8CIPQtJEIhRoz4KwBQ7iCxKXE4cwHINdcOTSQSIhTaP/4vEgB9tevXrz/22GMBwLKsyASyLINzmpPT+NNPP61Bl+t3dtdd/0Mp2g7XpgsSOProIzdsWF/NS5X6uaYV+cwWLZtyA22HadTftJjn2S+8MD6KDFR5XinlmjWrDzmkNWPguui6xHGIZZFXX31ZKRWEQSRpe68m9KW+886b8QzHdanvox/DWIxyDif37rlx4wYpZHWbv77TIAjLy0uvuPwSziEepzEfYjH049SwcNSoR/ZGYvcvDxYRAUEpRanxycefvPLyK4QYUikEhajCMNG+fYcbbrjBMAypJPx3jmQyWVpauivbSAh51VVX9enTJwiC6oA5/Q6OP/7EeEYsTOdtUArr163Ny8urJl6RivcRQrds2Xj/A/etXbuBcxaBrclEeP75F1x88eAwDKsDwvVhmzRp1r37EWEIiKgACJJkUq5cuaoSAXHf4KGEkC1bNo19ekxxcRlhRGOaUoLtmNdfPyI7u4mQoobaVYjIGJ0x4/1p779rmkQpUACIpKJc9OrZ85JLL5FyzxcP2d+wiZQKkW4t2PrwPx/Ztn0rIRSVAgCpJDf4iBHXd+3SOQx3IB7/FbVKI+UEAKtWrcrLy4tQIP3CKioSvXr1Gj78+iiQvAsdUgKk0gnatWvXvFkLEUpd+Y8xtnVbwY8//ljl04gMS0rJmLFPffrZZ5bFpFRSSoKkoiLo1q3L7bffriPQ1YFIOiLBGG3WrFlqGSgdkoP8agVvD7EfAEUpeeXfL8+ePce1iZIhKkCg5eViwDnnnfmnfhrvquFRU0o3bsp7+pkxhYUljBGlJCIRUjmOfeONf22U1aTmnK8DKwBCyhARX/zXSzNn/ocwS6YVlZSJ004//eKLL9ahsYhuUB3xZn+P3Y2IaeMkCIIpU6Zs3bo1hWYCIKIQIjOz4R133NGkSZPKbNBdmKuaX62aN2/Wtm2uFFrxKkSsKA+0AOwkA5FNTCn96KMPn332WUpImh5JpFKe691++50dOhxaa4qCPmzLVi0ZwxQOCxIR8vM2lJWVEiR7p4m0hOv4IP35l59eeOF5pXMdQSEhQSCaNs0eMeIm23bSpB3claCVugaE119/de7crxyHSiUAgRBSUS7PPrv/WWf2U0oyxqus+nbgYdBkMqGUnL9gftNmLREZ46mwFyJr3LjZF1/MVEolEokaTH8p5a6O0f4z6HfXrv3iiy9ycnIopREMalkWIeRvf7s1DMMacYmUha2N1zv/5w5AcFzDspnjGgBw1llnlZWV7XRhUkr9uNavX3/MMUchAcfl2vF1XE4ojBhxQ0VFRV3wEH3ed6e+47qGbRPHoa7LGIPDunVau3aNUkrKvfGDddlOJYVIJhPX33AdZRCLEc8F3wc/xhiHu+++s6rHLnf1kX78cXGnzm0tG+IZJBbHjAzquqRNm6bfz5+X/p09Rw7ZfrIQ9J+EkEQy+eijj21Yv4YyqzIj/OqrrjjxxOPDMMkYVnMEpVSaJlBWVlZWTjQJfB94JpUVFQBALBZjjNW9IY/elwsKCh555JH8/HzLsqLsloqKip49e950018ppZo6UY2CxMrPqnOnTrbNI2OAUFyxcnleXl5ubu5O5e0JIQBq1OOPfvPtPMcxpAwBFAAtKw96HnvM3269zTRNIWStGlEfsFFWtmXZJSWFjFJQQAgUFBQUbt/evHmLvXQAlAIhQsbYzM//M2nSJM5R6fwPQirKwx49egwbNryqTQZ3CZ6GL730wtKlyx2bgZKaEJ1MiEsvuazH4UemeVN7zhlj+9NEFpwbEydOmvzW24xZWkIpIUFQfszRx1037BpEJIQSsjOLs7JKrqhIjB///JQpU8vLyyMzo2pij/5T1fFZpMi1iCglNGmSfcMN1598cu8oQaQuAjBhwoSPP/7YNM3ICQvDsGHDhiNHjmzatKkmpVTD6sGdFmLHjp2yMhvl5W8gBKWUnOOaNatWrFiRm5tbOWNGBzvfeWfy8+PHmSbV9DJEGoayUVbmXXf9o1nz5tpAquObat68eUaDhoXFhRQlKCQIpaUl69at6dylayUC854oGSklIhRuLxg75smCrds9jwkhdFYX43z48OtzcprWEHLW5qVhGJ9/9snE1181eCrFglJaUREefkSPq64epk+xOyzgP8oE0haCEHLdunXdunUHQM6dVNyXmq4Tf/PNt5RSQiS1l1zlBq3jpg899M8/xq89+eSTN2/eHBn3tcL/3333XevWrTURSJOiTdMEgFtuuUUj9HUE5vTRNm3cfOKJxyMB22GGSS2bEYRRo0ZVJkhHYYeuXbsQmjJ+LJtaNicU/nHP33W4vY6sZimFUqq8vOzww7shAdcjjoOOTTmDF8Y/t5ekICFEMgiVUuOeG+tYzPep71PHgZjPKIXz/zygtLRYBwdqJswXFW378/kDDQPicer7GIuReJy5Hp/w0gv7KmK9PwRAhmGYSCSllCNG3AwAjLmE2IRajDsAcPnlV9Vqp2rgfMGChTk5TRGpaToGtw3uVppOeroGdzhLT25xbtY8TdOOpmFYtu1SSjt16rR8+fKaX7wWDyllSUnJwIEDKzMg9Oo/7rjj1q5dG4V1diOgJtVf/nIdgF7WxHY4AAwZcpmUIh0hElLKIEhedtmlAGA73LKpaRHH5QBw5pl9N23eqAO9dQynSCmECIUQ550/EBE8jzgOug6jBB584N7ddYqqlOqlS385/PAupgGxGHVd4vvUtjGnSebsOTOjZLpdriqFcYVhoJSa8OLz8bjt+9T3QRMfDAMGnHtmUdF2fbMHqQAEQUIp9cknn/p+Q0QL0aHE5twBIO3adViy5Mea4/wa6CgrKx80aDAAGNzR1AlG7eomZ+mfmcmYUeXk3Ix+0FP/1TRtALj22mtrFstUKkcyqZR6+umnI8WvVz9jrGHDhlOnTt2DmLzeK5599hnOqQ7oalLQcT2P2bp1a+XY7bhxz5kmNy1m2dS0qGUzyrBFy5xvv/0qOk4dzyxl6jXd/8A9ACkB8FyOAFdecZm+/j1bXlpNhGHwt9tuZgx8n3keeh6JxTjnMPL2mzXPp5pHISKeyIqVS48+urthQDyDxuIYixPPo02aZM788rN9yFqF/WD/hEKE27Zt733yaQBAqQdgU2ozZnNujB79hEZ+arAQ9EdvvPGmadqUGoxZWgA4symxCBoIBsGdJ0WTokkJp3TnSQijlFeWhEgADMNCpN27H/7TTz/pXbWG96o/XbBgQW5urs4LiwSAEHLTTTfp+9rddaPf5eeff5aZ2YAbxLKZ7VDGoXmLJvPnL9CPSyk1f/7C1q1bEYqaNKHDxobJxj49WilZCUyrIySSEoAXX3wh2gE8hwHAGWecWlZWuscCoF/fl7NmNmuebdno+8TzIO4z08TDDjt0+Yrfali+aS2TCMPg7rvvtCyMx2ksTuJxjGVQbsCIEcPDMLkPmRr7VgCkUqnN69FHRwEQSm1EB9GmzAGAP/3prO3btgmRomZVhQym9vqNGzf27Hk8AHLmMGpRYjFq6dRCz417TtxzM/R0d/wc99y45/lVzZjnxQzD0mJQ2RyilHte7NVXX63BbpHpIYQoLy+/5JJLqjR+Vq1atWcxeX3SVatWdO3aGUnKvLFdRhlOmDBBW/aFhYUDBpyDCI7DTWuH8XPRReeXlBSGYWT6R22D6mKpJpVSH344PRazLAsch7guYxSOOPKwtWtX75kA6AdVXFR04YXnUgZ+jHkeeB76HrVtOu75sbVu/vrTOXNmtWnTzLYhFiPxGGkQJ5YDXbp1+PW3n/RGsa+W7D5EgZQQoVSSM3PRD4vGjBmLSFSq8jUqGTRsmHXzzTfFMzKE0DAF7hIylKGQShHO2L9eeHHuV19xZmlchxAIwoo+ffpcccWVvu9RQiKIQkEtyVMakiWE5udvvO+++9asWW0YZqWgVTh48KDzzjtPR46qLBCiQR4pJed80qRJb7/99k5hr4yMjFtvvbVVq1Yastyz/Mzs7Mbt2rVbvPjH9L8REYY//LAQ8XLG2HPPPvv+++9ZNpdKaeJCRUXQqVOHu+66x3VjOglwt6KhSunCJNCkSXPfz9i8OZ8QVEoxjuvXr8vLz2vevKWU+k3VekcyBW0pFCJkjE95++0PZ0y3TQJSKUUQSXlFeHrfvhddeEn10PAOTK+svHj8C8+u37DesojStH9FKGXXXD20/SEddU79PoYs98kIgkQQJCoqKgZdfAkAcO4h2ogpzvNtt90RhkEyWVF9YEjodLCFC39o3ToXgXLmMGpz5iDSZs2az5s3b28ub/bsudnZjRGpdpRN0wbAHj16/PLLLzXblJHpv3Tp0q5duyJimvdm6HT4m266aW+S2aOz33vvvekdgNkOJxQ6d+k4e/aXEye+1rhxI27Q1ObgMNOijmu99tq/99gallIGQaiUWr16dceOhzACnscch9o2xmLm9BnTlFJBmEhvJrLWnT9iLK9ZtbLncUdZHOI+9TziedRxMDPL++DD6TVDN1Km9s8335qYmel6Psbi4McgFiemCX37nrxpc5728/chaXJfCkBku1u2S6hJqY1oMeYAQLdu3VetWiml5idWzfKVMtTo52WXDQEAg9uR6U+Q3H//A1LKiooKjTDWfSSTyTAM8/LyTjnlNACITH/GeIMGDd58841amff6OIlE4pprrqnE+kwZP0cfffSyZcv2CWzy9uTJvu/ozBjtDZsma9o0p0GDGOdE+746VIwE/jL82vLy8j0u5aCtbSVVeXn5SScdjwCexxybOg41LTJmzBNKqTBMpOPBdXIqNKz0j7v/xzQw5jPPI65HPJ9xDsOGXV1RUR4kkzUIgH4IGzdu6HPKCdyAeJx6Hvgx9DzSqJH37tS3IjP1YBQAbfytXbe+++FHAgBlDoCN1KbEtCzntddeTZtusgbvWSk1ZcpUz4tRyjlPrX4APOaYY/Py8vZA22mbUkp51113A5A08mMahgWAN9xwg84irdlw1+p/8uTJvu/rda9Rf8ZYPB5/66239p5Ar9/ojz8uyc1txTikBYDbNucGGiaxHW5azLK4Xv1HHnn46tWrqwMTd1fwBp7bHwBclzkO8X2OBG659a96SxeiTkk5UXLCvHlf57ZpYVno+9TziO9Tw4JD2rf58ccfVDojvMYjyMdHPey4zI9R30fPg3icmiZcdfUl5eUl+3bp72MB0GD2yJH/A4CU2Yg2oEOZCwAXXzw4kUho9VDd9WsAOD9/4/HHnwSABnfTsI9p2+7EiROVUntACtLrcsaMGZmZmYSwtPq3tdu6YsWKdLnCsIb7klKuXr368MMPj9R/FPYaNmyY3pT2EpXT77WgoOCUU0/GNClIT9vhtsMsm1kWt23TMGmDhrH33pu6u9GGGgTgzjtHEqLT5FMCcNllF+vHUhdGkH6GYRiUlpZceukgziAW455HfJ94HrUd9uijDysla5ClCGFbvGRhp07tTBtjceZ5EIsRx8H27VvN//4btU/TdPaVAKSSM/RznPnlrMzMxoRwylxEG5kLwFq1bDt//nylpBCJ6iVY6iX42GOjEClnNqc2o5bBHQC48MJBZWVlQgR7Bi+uW7dOJ6wYhqUhIEJow4YN3333XaVUECTDMFndu4mymW6++ebKyI+u7Nm9e/fffvtNE9T2XgCEEFKKYcOGwu8FIEr1sizuOCYQGDny1ijmtZdrQl/2O++8ZRjgOEQLAKVw4ok9t2zZEm3LtZo+yWRCKfX2O2/FM1zHIb5PXQ/9GGMGnHRyz/z8DbXGfYMgSCYT1994nWGBHzNcn3g+xGLUsvAfd98hRZhMJqqLHhxAARBKiSBICCmKS0r7nnE2ADDqIDqIDmU2InnssVF6M1VKVJlsKqX+VP7008/t2h6KwBhzGLUMZhPkOTlNv/76a6WUxux269Vqw33YsL8AgGEYjKUwUERyxx23a18iyr/e1TaL6BjTpk3LyMjQkL82gQzD8DyvMni6l1tzBP8988xYxoltp7W+zSybmRYxLarrpvTpc1J+fl4Uk94LwZMadFZKzZ07x9dIqE09l3EOnTu1X7lyWR2Vrs7727gp7+TevTgH30fPQ9cjtkMaZvpvTZ5Yve8rK1NiP/xgeqPsuOtRP0Y9H/wYMU3o1etIjcnuD/W/DwRAylADO088OZZSgxCbEBuJzZkDAH1OOW3z5s01KyohRBAkE4nEtdcM0/KjUX+DOwB4zz33SSkTiXIpo3RpFaHyNQy9dl9++WXbdqMwsGFYAHDSSSetX79OSlH5qnZ6PVEl57y8vJ49e+6q/ocNG1ZeXl4XRKKOOeZaAD7//JPsRpna6K8kANS2OTdITpNGM2fOrDlgt1sCoC/st99+bZPbghvgusR1qWVi8+bZX38zu47LToShUuqRR//XstDzieeB54HnU8bhyqsuLS8vrp62IKMoS2FhQf+zz+AcYrFUzqTrkXiG/dLL/6rBeTjwJpBO41+05MfWrdsBEEpdRIsQixAej2d++ulnSilNMagOTNAffTDjg3gskyCnxCJoceYAYI8eR61bt04H7YUI0hG0umqChQsXHHJIu8rIDyG0cePGH3/8iV5DtYllIIT4+9//johR6SvTNBGxW7duv/76a63wUeWlX6sY6EOtX7/2iCMOj8DQSAAsmxsGffTRh/WV18X3re0XUvnaSqnNmzYdceRhhILrUtelnsscm7399ht1EQD9+pYsWdi+Q66pfV8XfJ+YFrZt1+KbeV/pWwur2SSjTez555/2PO771PfR9zEWo4zD+Recs217wf7wffdBIEylewRVVCRHPT561aplhDpSSgAkiKGouPzyIX369JZS6Bqau7K9o8DH5s2bH3tsVGFRAae2kAKRKKVs277llr82a6a73KAQkjGm2fBFRUUFBQXbtm1LJBIEUWeIYqqJmkIEKVVxcdFjjz2+dOkyzg19nXoRDhs27LTTTtVc5ZojMoyxL7/8cty4cZWbIEkpXdcdOXJk+/bta67Cp58vIm7fvt0wDMdxopyBasJhRErZqFGjDh06fP/9gqiOok7/LS9LnnNOv6FDhymlamU766VFCJVSpHKqaiyV7PpuVlajSlnZGAbBxo0b61aWFIUIn37m6eXLV9g2k1IAEN3MesiQy4864mgpQ0KpLuu56xF04GzN2lXPj38uDAPOU7cWBDInJ/sv112fEW9Ql/SGPR5sL8JnMgyFaRrTZ0x/4403KDUBQIJilIRholu3w//61xvTK6fq/Dot1oyxiRMn/ueL/zBqKVCIQAgGYdnAfheee+5AIYQWFs6N4uLib7+dN3Pm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" alt="PMI" width="126" height="40">
+    <div>
+      <div class="sub">Press Metal Industries · Plant E-47</div>
+      <h1>PMI Sales</h1>
+    </div>
+    <div class="right">
+      <div class="seg useg" role="group" aria-label="Units"><button data-u="L" aria-pressed="false">₹ Lakh</button><button data-u="C" aria-pressed="true">₹ Cr</button><button data-u="A" aria-pressed="false" title="Full rupee amounts">₹ Actual</button></div><span class="pill role" id="rolePill" hidden></span><button class="btn" id="signOut" hidden style="padding:4px 11px">Sign out</button>
+      <span class="pill" id="srcPill"><span class="dot"></span><span id="srcTxt">Built-in data</span></span>
+    </div>
+  </div>
+  <div class="wrap"><nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-v="dashboard" aria-selected="true">Dashboard</button>
+    <button role="tab" data-v="monthly">Month-wise</button>
+    <button role="tab" data-v="customers">Customers</button>
+    <button role="tab" data-v="products">Products</button>
+    <button role="tab" data-v="invoices">Invoices</button>
+    <button role="tab" data-v="targets">Targets</button>
+    <button role="tab" data-v="data" hidden>Update data</button>
+    <button role="tab" data-v="users" hidden>Users</button>
+  </nav></div>
+</header>
+
+<div class="filters"><div class="wrap">
+  <div class="fld">Year <div class="seg" id="fySeg"></div></div>
+  <label class="fld" for="fMonth" id="fMonthWrap">Month <select id="fMonth"></select></label>
+  <div class="fld" id="fDateWrap"><label for="fFrom">Date</label> <input type="date" id="fFrom" aria-label="From date"> <span class="muted">to</span> <input type="date" id="fTo" aria-label="To date (optional)"> <button class="btn" id="fDateClr" style="padding:4px 9px" aria-label="Clear dates">✕</button></div>
+  <label class="fld" for="fCC">Customer group <select id="fCC"></select></label>
+  <label class="chk" for="fCore"><input type="checkbox" id="fCore"> Exclude Inter Company &amp; Exceptional (not sales)</label>
+  <span class="asof" id="asof"></span>
+</div></div>
+
+<main class="wrap" id="main"></main>
+<div class="tip" id="tip" hidden></div>
+
+<script type="application/json" id="seed">{"2026-27":{"start":"2026-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"2025-26":{"start":"2025-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"_targets":{"2026-27":[null,null,null,null,null,null,null,null,null,null,null,null],"2025-26":[43537315.0,42393697.0,54763697.0,40503493.0,40503493.0,54696893.0,41688493.0,41688493.0,41688493.0,46332693.0,46132693.0,46132693.0]}}</script>
+<script src="firebase-config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+const SEED = JSON.parse(document.getElementById('seed').textContent);
+const FYS = ['2026-27', '2025-26'];
+const FYCOL = { '2026-27': 'var(--s1)', '2025-26': 'var(--s2)', '2024-25': 'var(--s3)', '2023-24': 'var(--s4)' };
+const MON = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+// Lines that are not counted as sales, as in the PMI OTD Summary sheet: Customer Cat 'Inter Company' and 'Exceptional'
+const notSale = r => { const cc = String(r.cc).toUpperCase(); return cc === 'INTER COMPANY' || cc === 'EXCEPTIONAL'; };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fm = m0 => (m0 + 9) % 12; // calendar month (0=Jan) → fiscal index (0=Apr)
+const fyStart = fy => Date.UTC(+fy.slice(0, 4), 3, 1);
+const LK = { div: 1e5, s: 'L', name: '₹ Lakh' }, CR = { div: 1e7, s: 'Cr', name: '₹ Crore' }, AC = { div: 1e5, s: '', name: '₹ (actual)' };
+const UNITS = { L: LK, C: CR, A: AC };
+const chartUnit = () => UNIT === AC ? '₹ Lakh' : UNIT.name;
+const uTag = (x = '') => UNIT === AC ? `<small>₹${x}</small>` : `<small>₹ ${UNIT.s}${x}</small>`;
+let UNIT = LK;
+const L = v => v / UNIT.div;
+const nf0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf3 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const fLn = v => { if (v == null || isNaN(v)) return '–'; if (UNIT === AC) return nf0.format(Math.round(v)); const x = L(v), a = Math.abs(x); if (UNIT === CR) return a >= 1000 ? nf0.format(x) : a >= 1 || a === 0 ? nf2.format(x) : nf3.format(x); return a >= 1000 ? nf0.format(x) : nf1.format(x); };
+const fL = v => v == null || isNaN(v) ? '–' : '₹' + fLn(v) + (UNIT === AC ? '' : ' ' + UNIT.s);
+const fAx = v => UNIT === AC ? nf0.format(v) + ' L' : UNIT === CR ? (v >= 10 || v === 0 ? nf0.format(v) : String(+v.toFixed(2))) : nf0.format(v);
+const fAlt = v => UNIT === CR ? '₹' + nf0.format(v / 1e5) + ' L' : '₹' + nf2.format(v / 1e7) + ' Cr';
+const fCr = v => '₹' + nf2.format(v / 1e7) + ' Cr';
+const fQ = v => nf0.format(v);
+const pct = (a, b) => b ? (a / b * 100) : null;
+const fP = v => v == null || !isFinite(v) ? '–' : nf1.format(v) + '%';
+const fD = t => { const d = new Date(t); return d.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()] + ' ' + String(d.getUTCFullYear()).slice(2); };
+function chipG(g) { if (g == null || !isFinite(g)) return '<span class="chip mid">–</span>'; const c = g >= 0 ? 'up' : 'dn'; return `<span class="chip ${c}">${g >= 0 ? '▲' : '▼'} ${nf1.format(Math.abs(g))}%</span>`; }
+function chipA(a) { if (a == null || !isFinite(a)) return '<span class="chip mid">no target</span>'; const c = a >= 100 ? 'up' : a >= 90 ? 'mid' : 'dn'; return `<span class="chip ${c}">${nf1.format(a)}%</span>`; }
+
+/* ---------- data ---------- */
+function decode(fy, pack) {
+  const s = Date.parse(pack.start + 'T00:00:00Z'), d = pack.d;
+  return pack.r.map(r => {
+    const t = s + r[0] * 864e5, dt = new Date(t), p = d.part[r[3]] || '|', k = p.indexOf('|');
+    return { o: r[0], t, m: fm(dt.getUTCMonth()), dd: dt.getUTCDate(), inv: d.inv[r[1]], cust: d.cust[r[2]], part: p.slice(0, k), desc: p.slice(k + 1), qty: r[4], amt: r[5], pc: d.pc[r[6]], cc: d.cc[r[7]], plant: d.plant[r[8]] };
+  });
+}
+const PLANT = 'PMI E-47';
+const DATA = {};
+for (const fy of FYS) setFY(fy, decode(fy, SEED[fy]), { kind: 'built-in', src: SEED[fy].src });
+function setFY(fy, rows, meta) {
+  rows = rows.filter(r => r.plant === PLANT);
+  let mx = -1; for (const r of rows) if (r.o > mx) mx = r.o; if (mx < 0) mx = 0;
+  DATA[fy] = { rows, meta, asOfO: mx, asOfT: fyStart(fy) + mx * 864e5 };
+}
+const ABP = JSON.parse(JSON.stringify(SEED._targets)); const HAS_SEED = FYS.some(f => SEED[f].r.length);
+let TARGETS = JSON.parse(JSON.stringify(ABP));
+const QTGT = {}; FYS.forEach(f => QTGT[f] = new Array(12).fill(null));
+function applyDefaultTargets() { const D = window.PMI_DEFAULTS; TARGETS = JSON.parse(JSON.stringify(ABP)); FYS.forEach(f => { QTGT[f] = new Array(12).fill(null); if (D && D.targets && Array.isArray(D.targets[f])) TARGETS[f] = D.targets[f].slice(); if (D && D.qty && Array.isArray(D.qty[f])) QTGT[f] = D.qty[f].slice(); }); }
+applyDefaultTargets();
+
+let SAVED_UNIT = 'C'; try { SAVED_UNIT = ['L', 'C', 'A'].includes(localStorage.getItem('pmiSalesUnit')) ? localStorage.getItem('pmiSalesUnit') : 'C'; } catch (e) {}
+const S = { unit: SAVED_UNIT, dr: null, dm: null, ms: { q: '', n: 200, sort: 't', dir: -1 }, fy: '2026-27', plant: PLANT, cc: 'All', core: true, view: 'dashboard',
+  inv: { q: '', m: 'all', cust: 'all', n: 100, open: new Set() }, prod: { q: '', by: 'part', sort: 'amt', dir: -1, n: 150 }, cust: { q: '', sort: 'cur', dir: -1 } };
+try { const v = JSON.parse(localStorage.getItem('pmiSalesUI') || '{}'); Object.assign(S, { fy: FYS.includes(v.fy) ? v.fy : S.fy, cc: v.cc || S.cc, core: v.excl === undefined ? true : !!v.excl }); } catch (e) {}
+function saveUI() { try { localStorage.setItem('pmiSalesUI', JSON.stringify({ fy: S.fy, plant: S.plant, cc: S.cc, excl: S.core })); } catch (e) {} }
+
+function filt(fy, opt = {}) {
+  const D = DATA[fy]; if (!D) return [];
+  const lim = opt.upto;
+  return D.rows.filter(r => (S.plant === 'All' || r.plant === S.plant) && (opt.noCC || S.cc === 'All' || r.cc === S.cc) && (!S.core || !notSale(r)) && (lim == null || r.o <= lim));
+}
+const sum = rows => rows.reduce((a, r) => a + r.amt, 0);
+function byMonth(rows) { const a = new Array(12).fill(0); for (const r of rows) a[r.m] += r.amt; return a; }
+function groupSum(rows, key) { const m = new Map(); for (const r of rows) { const k = typeof key === 'function' ? key(r) : r[key]; m.set(k, (m.get(k) || 0) + r.amt); } return m; }
+const prevFY = fy => FYS[FYS.indexOf(fy) + 1] || null;
+const targetsOn = () => S.cc === 'All' && (S.plant === PLANT);
+function tgt(fy) { const t = TARGETS[fy]; return targetsOn() && t && t.some(x => x) ? t : null; }
+function qtgt(fy) { const t = QTGT[fy]; return targetsOn() && t && t.some(x => x) ? t : null; }
+function qtPro(fy, m, frac) { const t = qtgt(fy); if (!t) return null; return t.slice(0, m).reduce((a, b) => a + (b || 0), 0) + (t[m] || 0) * frac; }
+function daysIn(fy, m) { const y = +fy.slice(0, 4) + (m >= 9 ? 1 : 0), mo = (m + 3) % 12; return new Date(Date.UTC(y, mo + 1, 0)).getUTCDate(); }
+function workDays(fy, m, fromDay, toDay) { const y = +fy.slice(0, 4) + (m >= 9 ? 1 : 0), mo = (m + 3) % 12; let n = 0; for (let d = fromDay; d <= toDay; d++) if (new Date(Date.UTC(y, mo, d)).getUTCDay() !== 0) n++; return n; }
+function ctx(fy) {
+  const D = DATA[fy], aT = D.asOfT, ad = new Date(aT), cm = fm(ad.getUTCMonth()), dd = ad.getUTCDate(), dim = daysIn(fy, cm);
+  const closed = cm === 11 && dd === 31;
+  return { asOfO: D.asOfO, lyUpto: closed ? 9999 : D.asOfO, asOfT: aT, cm, dd, dim, closed };
+}
+
+/* ---------- tooltip ---------- */
+const tip = $('#tip');
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; moveTip(e); }
+function moveTip(e) { const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX + 14, y = e.clientY + 14; if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14; tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px'; }
+function hideTip() { tip.hidden = true; }
+const tr = (c, k, v) => `<div class="r"><span>${c ? `<i style="background:${c}"></i>` : ''}${k}</span><b style="margin:0">${v}</b></div>`;
+function bindTips(root, fn) {
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('pointerenter', e => showTip(e, fn(el.dataset.tip)));
+    el.addEventListener('pointermove', moveTip);
+    el.addEventListener('pointerleave', hideTip);
+  });
+}
+
+/* ---------- svg helpers ---------- */
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return ([1, 1.2, 1.6, 2, 2.4, 3, 4, 5, 6, 8, 10].find(s => n <= s)) * p; }
+function yAxis(W, H, pad, max, fmt, ticks = 4) {
+  let s = ''; for (let i = 0; i <= ticks; i++) { const v = max * i / ticks, y = pad.t + (H - pad.t - pad.b) * (1 - i / ticks);
+    s += `<line class="grid" x1="${pad.l}" x2="${W - pad.r}" y1="${y}" y2="${y}"/><text x="${pad.l - 6}" y="${y + 4}" text-anchor="end">${fmt(v)}</text>`; }
+  return s;
+}
+const rbar = (x, y, w, h, fill, extra = '') => { if (h <= 0) return ''; const r = Math.min(3, w / 2, h); return `<path ${extra} fill="${fill}" d="M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z"/>`; };
+
+function monthlyChart(fy, sel = null) {
+  const pf = prevFY(fy), cur = byMonth(filt(fy)), prev = pf ? byMonth(filt(pf)) : null, T = tgt(fy), c = ctx(fy);
+  const W = 720, H = 280, pad = { t: 12, r: 8, b: 26, l: 46 };
+  const max = niceMax(L(Math.max(...cur, ...(prev || [0]), ...(T || [0]).map(x => x || 0))));
+  const iw = (W - pad.l - pad.r) / 12, bw = Math.min(22, (iw - 10) / (prev ? 2 : 1)), sy = v => (H - pad.b) - (H - pad.t - pad.b) * (L(v) / max);
+  let s = yAxis(W, H, pad, max, fAx);
+  for (let m = 0; m < 12; m++) {
+    const x0 = pad.l + iw * m, cx = x0 + iw / 2, gw = bw * (prev ? 2 : 1) + (prev ? 2 : 0), bx = cx - gw / 2;
+    if (sel === m) s += `<rect x="${x0 + 2}" y="${pad.t}" width="${iw - 4}" height="${H - pad.t - pad.b}" rx="6" fill="var(--accent-bg)"/>`;
+    if (prev) s += rbar(bx, sy(prev[m]), bw, (H - pad.b) - sy(prev[m]), FYCOL[pf]);
+    const fx = prev ? bx + bw + 2 : bx;
+    s += rbar(fx, sy(cur[m]), bw, (H - pad.b) - sy(cur[m]), FYCOL[fy]);
+    if (T && T[m]) s += `<line x1="${bx - 4}" x2="${bx + gw + 4}" y1="${sy(T[m])}" y2="${sy(T[m])}" stroke="var(--tgt)" stroke-width="2" stroke-dasharray="4 2.5"/>`;
+    s += `<text x="${cx}" y="${H - 8}" text-anchor="middle" class="${(sel == null ? m === c.cm && !c.closed : m === sel) ? 'lab' : ''}">${MON[m]}</text>`;
+    s += `<rect data-tip="${m}" x="${x0}" y="${pad.t}" width="${iw}" height="${H - pad.t - pad.b}" fill="transparent"/>`;
+  }
+  s += `<line class="axis" x1="${pad.l}" x2="${W - pad.r}" y1="${H - pad.b}" y2="${H - pad.b}"/>`;
+  const leg = `<div class="legend"><span><i style="background:${FYCOL[fy]}"></i>FY ${fy}</span>${prev ? `<span><i style="background:${FYCOL[pf]}"></i>FY ${pf}</span>` : ''}${T ? '<span><i class="dash"></i>ABP target</span>' : ''}<span class="muted">${chartUnit()}</span></div>`;
+  return { html: leg + `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly sales, FY ${fy}${prev ? ' vs ' + pf : ''}">${s}</svg>`,
+    tip: k => { const m = +k; let h = `<b>${MON[m]} · FY ${fy}</b>` + tr(FYCOL[fy], 'Sales', fL(cur[m]));
+      if (prev) h += tr(FYCOL[pf], 'FY ' + pf, fL(prev[m])) + tr('', 'Growth', fP(prev[m] ? (cur[m] / prev[m] - 1) * 100 : null));
+      if (T && T[m]) h += tr('', 'Target', fL(T[m])) + tr('', 'Achieved', fP(pct(cur[m], T[m])));
+      return h; } };
+}
+
+function cumChart(fy, sel = null) {
+  const W = 720, H = 280, pad = { t: 12, r: 64, b: 26, l: 46 };
+  const series = FYS.map(f => { const bm = byMonth(filt(f)), c = ctx(f); let a = 0; const last = f === fy || DATA[f].asOfO < 364 ? c.cm : 11; return { f, v: bm.map((x, i) => i <= last ? (a += x) : null) }; });
+  const T = tgt(fy); let tc = null; if (T) { let a = 0; tc = T.map(x => (a += (x || 0))); }
+  const max = niceMax(L(Math.max(...series.flatMap(s => s.v.filter(x => x != null)), ...(tc || [0]))));
+  const iw = (W - pad.l - pad.r) / 11, sx = i => pad.l + iw * i, sy = v => (H - pad.b) - (H - pad.t - pad.b) * (L(v) / max);
+  let s = yAxis(W, H, pad, max, fAx);
+  if (sel != null) s += `<rect x="${pad.l}" y="${pad.t}" width="${sx(sel) - pad.l}" height="${H - pad.t - pad.b}" fill="var(--accent-bg)"/><line x1="${sx(sel)}" x2="${sx(sel)}" y1="${pad.t}" y2="${H - pad.b}" stroke="var(--accent)" stroke-width="1.5"/>`;
+  for (let m = 0; m < 12; m++) s += `<text x="${sx(m)}" y="${H - 8}" text-anchor="middle" class="${m === sel ? 'lab' : ''}">${MON[m]}</text>`;
+  if (tc) s += `<polyline fill="none" stroke="var(--tgt)" stroke-width="1.5" stroke-dasharray="5 3" points="${tc.map((v, i) => sx(i) + ',' + sy(v)).join(' ')}"/>`;
+  const labels = [];
+  for (const se of series) {
+    const pts = se.v.map((v, i) => v == null ? null : [sx(i), sy(v)]).filter(Boolean); if (!pts.length) continue;
+    const w = se.f === fy ? 2.5 : 2;
+    if (se.f === fy) s += `<polygon fill="${FYCOL[se.f]}" opacity=".10" points="${pts[0][0]},${H - pad.b} ${pts.map(p => p.join(',')).join(' ')} ${pts[pts.length - 1][0]},${H - pad.b}"/>`;
+    s += `<polyline fill="none" stroke="${FYCOL[se.f]}" stroke-width="${w}" stroke-linejoin="round" points="${pts.map(p => p.join(',')).join(' ')}"/>`;
+    const lp = pts[pts.length - 1]; s += `<circle cx="${lp[0]}" cy="${lp[1]}" r="4" fill="${FYCOL[se.f]}" stroke="var(--panel)" stroke-width="2"/>`;
+    labels.push({ x: lp[0] + 8, y: lp[1] + 4, t: se.f + ' · ' + (UNIT === AC ? nf0.format(L(se.v[pts.length - 1])) + ' L' : fLn(se.v[pts.length - 1])) });
+  }
+  labels.sort((a, b) => a.y - b.y); for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13;
+  for (const l of labels) s += `<text x="${Math.min(l.x, W - pad.r + 4)}" y="${l.y}" class="lab">${l.t}</text>`;
+  for (let m = 0; m < 12; m++) s += `<rect data-tip="${m}" x="${sx(m) - iw / 2}" y="${pad.t}" width="${iw}" height="${H - pad.t - pad.b}" fill="transparent"/>`;
+  s += `<line class="axis" x1="${pad.l}" x2="${W - pad.r}" y1="${H - pad.b}" y2="${H - pad.b}"/>`;
+  const leg = `<div class="legend">${FYS.map(f => `<span><i class="ln" style="background:${FYCOL[f]}"></i>FY ${f}</span>`).join('')}${tc ? `<span><i class="dash"></i>ABP ${fy}</span>` : ''}<span class="muted">${chartUnit()}, cumulative</span></div>`;
+  return { html: leg + `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative sales by financial year">${s}</svg>`,
+    tip: k => { const m = +k; let h = `<b>Apr – ${MON[m]} cumulative</b>`; for (const se of series) if (se.v[m] != null) h += tr(FYCOL[se.f], 'FY ' + se.f, fL(se.v[m])); if (tc) h += tr('', 'ABP ' + fy, fL(tc[m])); return h; } };
+}
+
+function selM(fy) { const c = ctx(fy), m = S.dm; return (m == null || (!c.closed && m > c.cm)) ? c.cm : m; }
+function mInfo(fy, m) { const c = ctx(fy), live = !c.closed && m === c.cm, dim = daysIn(fy, m); return { m, live, dim, upto: live ? c.dd : dim, y: +fy.slice(0, 4) + (m >= 9 ? 1 : 0) }; }
+const mLabel = (fy, m) => MON[m] + ' ' + (+fy.slice(0, 4) + (m >= 9 ? 1 : 0));
+
+function dailyChart(fy, m, hl = null) {
+  const mi = mInfo(fy, m), rows = filt(fy).filter(r => r.m === m), dim = mi.dim, a = new Array(dim + 1).fill(0);
+  for (const r of rows) a[r.dd] += r.amt;
+  const T = tgt(fy), req = T && T[m] ? T[m] / workDays(fy, m, 1, dim) : null;
+  const W = 1260, H = 250, pad = { t: 12, r: 8, b: 26, l: 46 };
+  const max = niceMax(L(Math.max(...a, req || 0)));
+  const iw = (W - pad.l - pad.r) / dim, bw = Math.max(3, iw - 4), sy = v => (H - pad.b) - (H - pad.t - pad.b) * (L(v) / max);
+  const mo = (m + 3) % 12;
+  let s = yAxis(W, H, pad, max, fAx, 4);
+  for (let d = 1; d <= dim; d++) {
+    const x = pad.l + iw * (d - 1) + (iw - bw) / 2, sun = new Date(Date.UTC(mi.y, mo, d)).getUTCDay() === 0;
+    if (hl === d) s += `<rect x="${pad.l + iw * (d - 1)}" y="${pad.t}" width="${iw}" height="${H - pad.t - pad.b}" rx="4" fill="var(--accent-bg)" stroke="var(--accent-line)"/>`;
+    s += rbar(x, sy(a[d]), bw, (H - pad.b) - sy(a[d]), FYCOL[fy]);
+    if (d === 1 || d % 5 === 0 || d === dim) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${d}</text>`;
+    if (sun) s += `<circle cx="${x + bw / 2}" cy="${H - pad.b + 5}" r="1.6" fill="var(--ink-3)"/>`;
+    s += `<rect data-tip="${d}" x="${pad.l + iw * (d - 1)}" y="${pad.t}" width="${iw}" height="${H - pad.t - pad.b}" fill="transparent"/>`;
+  }
+  if (req) s += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${sy(req)}" y2="${sy(req)}" stroke="var(--tgt)" stroke-width="1.5" stroke-dasharray="5 3"/>`;
+  s += `<line class="axis" x1="${pad.l}" x2="${W - pad.r}" y1="${H - pad.b}" y2="${H - pad.b}"/>`;
+  const leg = `<div class="legend"><span><i style="background:${FYCOL[fy]}"></i>Daily sales</span>${req ? `<span><i class="dash"></i>Needed per working day (${fL(req)})</span>` : ''}<span class="muted">${chartUnit()} · dots mark Sundays</span></div>`;
+  return { html: leg + `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily sales, ${mLabel(fy, m)}">${s}</svg>`,
+    tip: k => { const d = +k, inv = new Set(rows.filter(r => r.dd === d).map(r => r.inv)).size; return `<b>${d} ${MON[m]}</b>` + tr(FYCOL[fy], 'Sales', fL(a[d])) + tr('', 'Invoices', inv) + (req ? tr('', 'vs needed', fP(pct(a[d], req))) : ''); } };
+}
+
+/* ---------- views ---------- */
+function kpis(fy) {
+  const c = ctx(fy), pf = prevFY(fy), rows = filt(fy), tot = sum(rows), T = tgt(fy);
+  const ly = pf ? sum(filt(pf, { upto: c.lyUpto })) : null;
+  const annT = T ? T.reduce((a, b) => a + (b || 0), 0) : null;
+  const ytdT = T ? T.slice(0, c.cm).reduce((a, b) => a + (b || 0), 0) + (T[c.cm] || 0) * (c.dd / c.dim) : null;
+  const invs = new Set(rows.map(r => r.inv)).size, custs = new Set(rows.map(r => r.cust)).size, parts = new Set(rows.map(r => r.part)).size;
+  const first = rows.length ? Math.min(...rows.map(r => r.t)) : null;
+  return `<section class="tiles">
+  <div class="tile hero"><span class="lbl">Sales · FY ${fy} to date</span><span class="val">${fLn(tot)}${uTag()}</span>
+    <span class="foot">${fAlt(tot)} · ${first ? fD(first) + ' – ' + fD(c.asOfT) : 'no dispatches'}</span>
+    ${annT ? `<div class="meter" title="Share of annual ABP"><i style="width:${Math.min(100, pct(tot, annT))}%"></i></div><span class="foot">${fP(pct(tot, annT))} of annual ABP ${fL(annT)}</span>` : ''}</div>
+  <div class="tile"><span class="lbl">vs ABP to date</span><span class="val">${ytdT ? fP(pct(tot, ytdT)) : '–'}</span>
+    <span class="foot">${ytdT ? `${tot >= ytdT ? '<span class="chip up">Ahead</span>' : '<span class="chip dn">Behind</span>'} Target ${fL(ytdT)} · ${tot >= ytdT ? 'ahead by' : 'short by'} ${fL(Math.abs(tot - ytdT))}` : '<span class="muted">' + (targetsOn() ? 'No target set for this year' : 'Targets apply when All customers is selected') + '</span>'}</span></div>
+  <div class="tile"><span class="lbl">vs last year, same period</span><span class="val" style="color:${ly ? (tot >= ly ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${ly ? (tot >= ly ? '+' : '') + fP((tot / ly - 1) * 100) : '–'}</span>
+    <span class="foot">${ly ? `FY ${pf}: ${fL(ly)} · ${tot >= ly ? '+' : '−'}${fL(Math.abs(tot - ly))}` : '<span class="muted">No earlier year loaded</span>'}</span></div>
+  ${qtyTile('Sales qty · FY to date', rows, pf ? filt(pf, { upto: c.lyUpto }) : null, 'vs same period LY', qtPro(fy, c.cm, c.dd / c.dim), 'target to date')}
+  </section>`;
+}
+const qtyOf = rows => rows.reduce((a, r) => a + (r.pc === 'Scrap' ? 0 : r.qty), 0);
+function qtyTile(lbl, rows, lyRows, lyTxt, qT = null, qTxt = 'target') {
+  const q = qtyOf(rows), lq = lyRows ? qtyOf(lyRows) : null;
+  return `<div class="tile"><span class="lbl">${lbl}</span><span class="val">${fQ(q)}<small>Nos</small></span>
+    ${qT ? `<span class="foot">${chipA(pct(q, qT))} of ${qTxt} ${fQ(Math.round(qT))}</span><div class="meter"><i style="width:${Math.min(100, pct(q, qT))}%"></i></div>` : ''}
+    <span class="foot">${lq ? chipG((q / lq - 1) * 100) + ' ' + lyTxt + ' (' + fQ(lq) + ')' : '<span class="muted">No earlier year loaded</span>'}</span>
+    <span class="foot muted">Excludes scrap (weight)</span></div>`;
+}
+
+function monthKpis(fy, m) {
+  const mi = mInfo(fy, m), pf = prevFY(fy), T = tgt(fy), rows = filt(fy).filter(r => r.m === m), tot = sum(rows), mT = T ? T[m] : null;
+  const lyRows = pf ? filt(pf).filter(r => r.m === m && (!mi.live || r.dd <= mi.upto)) : null, ly = lyRows ? sum(lyRows) : null;
+  const lyFull = pf ? sum(filt(pf).filter(r => r.m === m)) : null;
+  const days = new Set(rows.map(r => r.dd)).size, avg = days ? tot / days : 0;
+  const remWD = mi.live ? workDays(fy, m, mi.upto + 1, mi.dim) : 0, ask = mi.live && mT && remWD ? Math.max(0, mT - tot) / remWD : null;
+  const byDay = new Array(mi.dim + 1).fill(0); rows.forEach(r => byDay[r.dd] += r.amt); let best = 0; for (let d = 1; d <= mi.dim; d++) if (byDay[d] > byDay[best]) best = d;
+  const invs = new Set(rows.map(r => r.inv)).size, custs = new Set(rows.map(r => r.cust)).size;
+  const lyLbl = mi.live ? `${MON[m]} 1–${mi.upto}, FY ${pf}` : `${MON[m]}, FY ${pf}`;
+  return `<section class="tiles">
+  <div class="tile hero"><span class="lbl">${mLabel(fy, m)} · ${mi.live ? 'month to date' : 'full month'}</span><span class="val">${fLn(tot)}${uTag()}</span>
+    <span class="foot">${fAlt(tot)} · ${mi.live ? 'up to ' + mi.upto + ' ' + MON[m] : days + ' dispatch days'}</span>
+    ${mT ? `<div class="meter"><i style="width:${Math.min(100, pct(tot, mT))}%"></i></div>` : ''}</div>
+  <div class="tile"><span class="lbl">vs month target</span><span class="val">${mT ? fP(pct(tot, mT)) : '–'}</span>
+    <span class="foot">${mT ? `${tot >= mT ? '<span class="chip up">Met</span>' : mi.live ? '<span class="chip mid">In progress</span>' : '<span class="chip dn">Missed</span>'} Target ${fL(mT)} · ${tot >= mT ? 'over by' : 'short by'} ${fL(Math.abs(tot - mT))}` : '<span class="muted">No target for this month</span>'}</span></div>
+  <div class="tile"><span class="lbl">vs last year</span><span class="val" style="color:${ly ? (tot >= ly ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${ly ? (tot >= ly ? '+' : '') + fP((tot / ly - 1) * 100) : '–'}</span>
+    <span class="foot">${ly ? `${lyLbl}: ${fL(ly)}${mi.live ? ' · full month ' + fL(lyFull) : ''}` : '<span class="muted">No earlier year loaded</span>'}</span></div>
+  ${mi.live ? `<div class="tile"><span class="lbl">Asking rate</span><span class="val">${ask != null ? fLn(ask) + uTag('/day') : '–'}</span>
+    <span class="foot">${ask != null ? `${remWD} working days left · running at ${fL(avg)}/day` : mT && tot >= mT ? 'Month target met' : `Avg ${fL(avg)} per dispatch day`}</span></div>`
+  : `<div class="tile"><span class="lbl">Daily average</span><span class="val">${fLn(avg)}${uTag('/day')}</span>
+    <span class="foot">${best ? `Best day ${best} ${MON[m]}: ${fL(byDay[best])}` : 'No dispatches'}</span></div>`}
+  ${qtyTile('Sales qty · ' + MON[m], rows, lyRows, mi.live ? 'vs same days LY' : 'vs ' + MON[m] + ' LY', qtgt(fy) ? qtgt(fy)[m] : null, 'month target')}
+  </section>`;
+}
+
+function cumTiles(fy, m) {
+  const mi = mInfo(fy, m), pf = prevFY(fy), T = tgt(fy);
+  const rows = filt(fy).filter(r => r.m <= m), tot = sum(rows);
+  const lyRows = pf ? filt(pf).filter(r => r.m < m || (r.m === m && (!mi.live || r.dd <= mi.upto))) : null, ly = lyRows ? sum(lyRows) : null;
+  const cT = T ? T.slice(0, m).reduce((a, b) => a + (b || 0), 0) + (T[m] || 0) * (mi.live ? mi.upto / mi.dim : 1) : null;
+  const annT = T ? T.reduce((a, b) => a + (b || 0), 0) : null;
+  const span = 'Apr – ' + (mi.live ? mi.upto + ' ' : '') + MON[m];
+  return `<div class="sec-hd" style="padding-top:6px;margin-top:0"><div><div class="eyebrow">Cumulative</div><h2 style="font-size:16px">${span} ${mi.y}</h2></div></div>
+  <section class="tiles">
+  <div class="tile hero"><span class="lbl">Cumulative sales · ${span}</span><span class="val">${fLn(tot)}${uTag()}</span>
+    <span class="foot">${fAlt(tot)}${annT ? ' · ' + fP(pct(tot, annT)) + ' of annual ABP' : ''}</span>
+    ${annT ? `<div class="meter"><i style="width:${Math.min(100, pct(tot, annT))}%"></i></div>` : ''}</div>
+  <div class="tile"><span class="lbl">vs cumulative target</span><span class="val">${cT ? fP(pct(tot, cT)) : '–'}</span>
+    <span class="foot">${cT ? `${tot >= cT ? '<span class="chip up">Ahead</span>' : '<span class="chip dn">Behind</span>'} Target ${fL(cT)} · ${tot >= cT ? 'ahead by' : 'short by'} ${fL(Math.abs(tot - cT))}` : '<span class="muted">No target</span>'}</span></div>
+  <div class="tile"><span class="lbl">vs last year, ${span}</span><span class="val" style="color:${ly ? (tot >= ly ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${ly ? (tot >= ly ? '+' : '') + fP((tot / ly - 1) * 100) : '–'}</span>
+    <span class="foot">${ly ? `FY ${pf}: ${fL(ly)} · ${tot >= ly ? '+' : '−'}${fL(Math.abs(tot - ly))}` : '<span class="muted">No earlier year loaded</span>'}</span></div>
+  ${qtyTile('Cumulative qty · ' + span, rows, lyRows, 'vs LY', qtPro(fy, m, mi.live ? mi.upto / mi.dim : 1), 'target')}
+  </section>`;
+}
+
+function catTable(fy, key, label, limit = 12, m = null) {
+  const c = ctx(fy), pf = prevFY(fy), mi = m == null ? null : mInfo(fy, m), o = key === 'cc' ? { noCC: true } : {};
+  const rows = filt(fy, o).filter(r => m == null || r.m === m), tot = sum(rows), cur = groupSum(rows, key);
+  const lyR = !pf ? [] : m == null ? filt(pf, Object.assign({ upto: c.lyUpto }, o)) : filt(pf, o).filter(r => r.m === m && (!mi.live || r.dd <= mi.upto));
+  const ly = groupSum(lyR, key);
+  const list = [...cur.entries()].sort((a, b) => b[1] - a[1]); const mx = list.length ? list[0][1] : 1;
+  const shown = list.slice(0, limit), rest = list.slice(limit);
+  const body = shown.map(([k, v]) => { const l = ly.get(k); return `<tr><td>${esc(k)}</td><td class="n"><span class="bar" style="width:${Math.max(2, v / mx * 60)}px"></span>${fLn(v)}</td><td class="n">${fP(pct(v, tot))}</td><td class="n muted">${l ? fLn(l) : '–'}</td><td class="n">${l ? chipG((v / l - 1) * 100) : '<span class="chip up">new</span>'}</td></tr>`; }).join('');
+  const restV = rest.reduce((a, b) => a + b[1], 0);
+  const lyH = m == null ? 'LY same period' : mi.live ? 'LY same days' : 'LY same month';
+  if (!list.length) return '<div class="empty">No sales in this period</div>';
+  return `<div class="tbl-wrap"><table><thead><tr><th>${label}</th><th class="n">${UNIT.name}</th><th class="n">Share</th><th class="n">${lyH}</th><th class="n">Growth</th></tr></thead><tbody>${body}${rest.length ? `<tr><td class="muted">${rest.length} more</td><td class="n">${fLn(restV)}</td><td class="n">${fP(pct(restV, tot))}</td><td></td><td></td></tr>` : ''}</tbody>
+  <tfoot><tr><td>Total</td><td class="n">${fLn(tot)}</td><td class="n">100%</td><td class="n muted">${pf ? fLn(sum(lyR)) : '–'}</td><td></td></tr></tfoot></table></div>`;
+}
+
+function topParts(fy, n = 10, mm = null) {
+  const pr = typeof mm === 'function' ? mm : r => mm == null || r.m === mm;
+  const m = new Map(); for (const r of filt(fy)) { if (!pr(r) || r.pc === 'Scrap') continue; const k = r.part; const o = m.get(k) || { part: r.part, desc: r.desc, pc: r.pc, qty: 0, amt: 0 }; o.qty += r.qty; o.amt += r.amt; m.set(k, o); }
+  const list = [...m.values()].sort((a, b) => b.amt - a.amt).slice(0, n);
+  if (!list.length) return '<div class="empty">No sales in this period</div>';
+  return `<div class="tbl-wrap"><table><thead><tr><th>Part</th><th>Description</th><th>Category</th><th class="n">Qty</th><th class="n">${UNIT.name}</th><th class="n">Avg rate ₹</th></tr></thead><tbody>${list.map(o => `<tr><td class="mono">${esc(o.part)}</td><td class="wrap-t">${esc(o.desc)}</td><td>${esc(o.pc)}</td><td class="n">${fQ(o.qty)}</td><td class="n">${fLn(o.amt)}</td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function monthPicker(fy, m) {
+  const c = ctx(fy), have = new Set(filt(fy).map(r => r.m));
+  return `<div class="seg mseg" role="group" aria-label="Choose month">${MON.map((n, i) => { const off = (!c.closed && i > c.cm) || !have.has(i); return `<button data-dm="${i}" aria-pressed="${i === m}" ${off ? 'disabled' : ''}>${n}</button>`; }).join('')}</div>`;
+}
+
+function monthSales(fy, sp) {
+  const M = S.ms, q = M.q.trim().toLowerCase();
+  const all = filt(fy).filter(sp.pred);
+  const rows = all.filter(r => !q || (r.inv + ' ' + r.cust + ' ' + r.part + ' ' + r.desc + ' ' + r.pc + ' ' + r.cc).toLowerCase().includes(q));
+  const keys = { t: r => r.t, inv: r => r.inv, cust: r => r.cust, part: r => r.part, pc: r => r.pc, qty: r => r.qty, rate: r => r.qty ? r.amt / r.qty : 0, amt: r => r.amt };
+  const kf = keys[M.sort] || keys.t; rows.sort((a, b) => { const x = kf(a), y = kf(b); return ((x > y ? 1 : x < y ? -1 : 0) * M.dir) || (b.t - a.t) || (a.inv > b.inv ? 1 : -1); });
+  const tot = sum(rows), tq = qtyOf(rows);
+  const th = (k, t, n) => `<th class="sort${n ? ' n' : ''}" data-ms="${k}">${t}${M.sort === k ? (M.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  return `<section class="card" id="msCard"><div class="hd"><h2>Sales data · ${sp.label}</h2><span class="note">${fQ(rows.length)} of ${fQ(all.length)} lines · value in ₹</span>
+  <span class="sp row"><input type="search" id="msq" placeholder="Search invoice, customer, part, category" value="${esc(M.q)}" aria-label="Search month sales"><button class="btn" id="msCsv">Export to Excel</button></span></div>
+  <div class="tbl-wrap" style="max-height:640px;overflow:auto"><table><thead><tr>${th('t', 'Date')}${th('inv', 'Invoice no.')}${th('cust', 'Customer')}${th('part', 'Part')}<th>Description</th>${th('pc', 'Category')}${th('qty', 'Qty', 1)}${th('rate', 'Rate ₹', 1)}${th('amt', 'Value ₹', 1)}</tr></thead>
+  <tbody>${rows.slice(0, M.n).map(r => `<tr><td>${fD(r.t)}</td><td class="mono">${esc(r.inv)}</td><td class="wrap-t" style="min-width:180px">${esc(r.cust)}</td><td class="mono">${esc(r.part)}</td><td class="wrap-t">${esc(r.desc)}</td><td>${esc(r.pc)}</td><td class="n">${fQ(r.qty)}</td><td class="n">${r.qty ? nf2.format(r.amt / r.qty) : '–'}</td><td class="n"><b>${nf0.format(r.amt)}</b></td></tr>`).join('') || '<tr><td colspan="9" class="empty">No lines match</td></tr>'}</tbody>
+  <tfoot><tr><td colspan="6">Total · ${fQ(rows.length)} lines · ${new Set(rows.map(r => r.inv)).size} invoices</td><td class="n">${fQ(rows.reduce((a, r) => a + r.qty, 0))}</td><td></td><td class="n">${nf0.format(tot)}</td></tr></tfoot></table></div>
+  ${rows.length > M.n ? `<div class="more"><button class="btn" id="msMore">Show ${Math.min(200, rows.length - M.n)} more of ${rows.length - M.n}</button></div>` : ''}</section>`;
+}
+function bindMonthSales(fy, sp) {
+  const M = S.ms, card = $('#msCard'); if (!card) return;
+  const redraw = () => { const y = window.scrollY; card.outerHTML = monthSales(fy, sp); bindMonthSales(fy, sp); window.scrollTo(0, y); };
+  $('#msq').oninput = e => { M.q = e.target.value; M.n = 200; const p = e.target.selectionStart; redraw(); const i = $('#msq'); i.focus(); i.setSelectionRange(p, p); };
+  card.querySelectorAll('th[data-ms]').forEach(t => t.onclick = () => { const k = t.dataset.ms; if (M.sort === k) M.dir *= -1; else { M.sort = k; M.dir = ['inv', 'cust', 'part', 'pc'].includes(k) ? 1 : -1; } redraw(); });
+  const mm = $('#msMore'); if (mm) mm.onclick = () => { M.n += 200; redraw(); };
+  $('#msCsv').onclick = () => { const q = M.q.trim().toLowerCase(); const rows = filt(fy).filter(r => sp.pred(r) && (!q || (r.inv + ' ' + r.cust + ' ' + r.part + ' ' + r.desc + ' ' + r.pc + ' ' + r.cc).toLowerCase().includes(q))).sort((a, b) => a.t - b.t);
+    download(sp.fname, [['Invoice Date', 'Invoice No', 'Customer', 'Customer Cat', 'Part No', 'Description', 'Product Cat', 'Qty', 'Rate', 'Value'], ...rows.map(r => [new Date(r.t).toISOString().slice(0, 10), r.inv, r.cust, r.cc, r.part, r.desc, r.pc, r.qty, r.qty ? (r.amt / r.qty).toFixed(2) : '', r.amt.toFixed(2)])]); };
+}
+
+function vDashboard() {
+  if (S.dr) return vDateDash();
+  const fy = S.fy, c = ctx(fy), have = new Set(filt(fy).map(r => r.m));
+  if (S.dm != null && ((!c.closed && S.dm > c.cm) || !have.has(S.dm))) S.dm = null;
+  const sel = S.dm, m = sel == null ? c.cm : sel, mi = mInfo(fy, m), A = monthlyChart(fy, sel), Dd = dailyChart(fy, m);
+  const B = cumChart(fy, sel);
+  let html;
+  if (sel == null) {
+    html = `<div class="view">${kpis(fy)}
+  <div class="grid2">
+    <section class="card" id="cA"><div class="hd"><h2>Month-wise sales</h2><span class="note">Click a month to open it</span></div>${A.html}</section>
+    <section class="card" id="cB"><div class="hd"><h2>Cumulative sales by year</h2><span class="note">Where each year stood by month-end</span></div>${B.html}</section>
+  </div>
+  <div class="sec-hd" id="monthSec"><div><div class="eyebrow">${mi.live ? 'This month' : 'Last month of the year'}</div><h2>${mLabel(fy, m)}${mi.live ? ' <span class="chip mid">running</span>' : ''}</h2></div>${monthPicker(fy, null)}</div>
+  ${monthKpis(fy, m)}
+  <section class="card" id="cD"><div class="hd"><h2>Daily sales · ${mLabel(fy, m)}</h2><span class="note">${mi.live ? 'Up to ' + fD(c.asOfT) : 'Full month'}</span><span class="sp"><button class="btn" data-dm-open="${m}">Open ${MON[m]} sales data →</button></span></div>${Dd.html}</section>
+  <div class="sec-hd"><div><div class="eyebrow">Full year</div><h2>FY ${fy} to date</h2></div></div>
+  <div class="grid2">
+    <section class="card"><div class="hd"><h2>By customer group</h2><span class="note">FY to date vs same period last year</span></div>${catTable(fy, 'cc', 'Customer group')}</section>
+    <section class="card"><div class="hd"><h2>By product category</h2><span class="note">FY to date vs same period last year</span></div>${catTable(fy, 'pc', 'Product category', 14)}</section>
+  </div>
+  <section class="card"><div class="hd"><h2>Top 10 parts by value</h2><span class="note">FY ${fy} to date · excludes scrap</span><span class="sp"><button class="btn" data-go="products">All parts →</button></span></div>${topParts(fy)}</section>
+  </div>`;
+  } else {
+    html = `<div class="view">
+  <div class="sec-hd" id="monthSec" style="border-top:0;margin-top:0;padding-top:0"><div><div class="eyebrow">Month view · FY ${fy}</div><h2>${mLabel(fy, m)}${mi.live ? ' <span class="chip mid">running</span>' : ''}</h2></div><div class="row">${monthPicker(fy, m)}<button class="btn" data-dm-open="all">Full year</button></div></div>
+  ${monthKpis(fy, m)}
+  ${cumTiles(fy, m)}
+  <section class="card" id="cD"><div class="hd"><h2>Daily sales</h2><span class="note">${mi.live ? 'Up to ' + fD(c.asOfT) : 'Full month'}</span></div>${Dd.html}</section>
+  <div class="grid2">
+    <section class="card" id="cA"><div class="hd"><h2>Where ${MON[m]} sits in the year</h2><span class="note">Click another month to switch</span></div>${A.html}</section>
+    <section class="card" id="cB"><div class="hd"><h2>Cumulative up to ${MON[m]}</h2><span class="note">Shaded = Apr to ${MON[m]}</span></div>${B.html}</section>
+  </div>
+  <div class="grid2">
+    <section class="card"><div class="hd"><h2>By customer group</h2><span class="note">vs ${mi.live ? 'same days' : 'same month'} last year</span></div>${catTable(fy, 'cc', 'Customer group', 12, m)}</section>
+    <section class="card"><div class="hd"><h2>By product category</h2><span class="note">vs ${mi.live ? 'same days' : 'same month'} last year</span></div>${catTable(fy, 'pc', 'Product category', 14, m)}</section>
+  </div>
+  <section class="card"><div class="hd"><h2>Top 10 parts · ${mLabel(fy, m)}</h2><span class="note">Excludes scrap</span></div>${topParts(fy, 10, m)}</section>
+  ${monthSales(fy, mSpec(fy, m))}
+  </div>`;
+  }
+  $('#main').innerHTML = html;
+  bindTips($('#cA'), A.tip); if (B) bindTips($('#cB'), B.tip); bindTips($('#cD'), Dd.tip);
+  const pick = v => { S.dr = null; S.dm = v; S.ms.q = ''; S.ms.n = 200; refreshAll(); window.scrollTo({ top: 0 }); };
+  document.querySelectorAll('[data-dm]').forEach(b => b.onclick = () => pick(+b.dataset.dm));
+  document.querySelectorAll('[data-dm-open]').forEach(b => b.onclick = () => pick(b.dataset.dmOpen === 'all' ? null : +b.dataset.dmOpen));
+  $('#cA').querySelectorAll('rect[data-tip]').forEach(r => { const i = +r.dataset.tip; if ((!c.closed && i > c.cm) || !have.has(i)) return; r.style.cursor = 'pointer'; r.addEventListener('click', () => { hideTip(); pick(i); }); });
+  if (sel != null) bindMonthSales(fy, mSpec(fy, m));
+}
+
+/* ---------- date view ---------- */
+const o2iso = (fy, o) => new Date(fyStart(fy) + o * 864e5).toISOString().slice(0, 10);
+const iso2o = (fy, s) => { const t = Date.parse(s + 'T00:00:00Z'); return isNaN(t) ? null : Math.round((t - fyStart(fy)) / 864e5); };
+const oT = (fy, o) => fyStart(fy) + o * 864e5;
+function lyO(fy, o) { const pf = prevFY(fy); if (!pf) return null; const d = new Date(oT(fy, o)); let t = Date.UTC(d.getUTCFullYear() - 1, d.getUTCMonth(), d.getUTCDate()); if (new Date(t).getUTCMonth() !== d.getUTCMonth()) t -= 864e5; return Math.round((t - fyStart(pf)) / 864e5); }
+function dayTarget(fy, o, T = tgt(fy)) { if (!T) return null; const d = new Date(oT(fy, o)); if (d.getUTCDay() === 0) return 0; const m = fm(d.getUTCMonth()); return T[m] ? T[m] / workDays(fy, m, 1, daysIn(fy, m)) : 0; }
+function rangeTarget(fy, a, b, T = tgt(fy)) { if (!T) return null; let s = 0; for (let o = a; o <= b; o++) s += dayTarget(fy, o, T); return s; }
+const dLabel = (fy, a, b) => a === b ? fD(oT(fy, a)) : fD(oT(fy, a)) + ' – ' + fD(oT(fy, b));
+function dSpec(fy, a, b) { return { pred: r => r.o >= a && r.o <= b, label: dLabel(fy, a, b), fname: `PMI_sales_${o2iso(fy, a)}${a === b ? '' : '_to_' + o2iso(fy, b)}.xlsx` }; }
+function mSpec(fy, m) { return { pred: r => r.m === m, label: mLabel(fy, m), fname: `PMI_sales_${MON[m]}_${mInfo(fy, m).y}.xlsx` }; }
+
+function dateTiles(fy, a, b) {
+  const pf = prevFY(fy), rows = filt(fy).filter(r => r.o >= a && r.o <= b), tot = sum(rows), tg = rangeTarget(fy, a, b);
+  const la = lyO(fy, a), lb = lyO(fy, b), lyRows = pf ? filt(pf).filter(r => r.o >= la && r.o <= lb) : null, ly = lyRows ? sum(lyRows) : null;
+  const one = a === b, days = new Set(rows.map(r => r.o)).size, invs = new Set(rows.map(r => r.inv)).size, custs = new Set(rows.map(r => r.cust)).size;
+  return `<section class="tiles">
+  <div class="tile hero"><span class="lbl">Sales · ${dLabel(fy, a, b)}</span><span class="val">${fLn(tot)}${uTag()}</span>
+    <span class="foot">${fAlt(tot)} · ${one ? new Date(oT(fy, a)).toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'UTC' }) : (b - a + 1) + ' days, ' + days + ' with dispatch'}</span></div>
+  <div class="tile"><span class="lbl">vs ${one ? 'daily' : 'period'} target</span><span class="val">${tg ? fP(pct(tot, tg)) : '–'}</span>
+    <span class="foot">${tg ? `${tot >= tg ? '<span class="chip up">Above</span>' : '<span class="chip dn">Below</span>'} Needed ${fL(tg)} · ${tot >= tg ? 'over by' : 'short by'} ${fL(Math.abs(tot - tg))}` : tg === 0 ? '<span class="muted">Sunday · no target</span>' : '<span class="muted">No target</span>'}</span></div>
+  <div class="tile"><span class="lbl">vs same ${one ? 'date' : 'dates'} last year</span><span class="val" style="color:${ly ? (tot >= ly ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${ly ? (tot >= ly ? '+' : '') + fP((tot / ly - 1) * 100) : '–'}</span>
+    <span class="foot">${pf ? `${dLabel(pf, la, lb)}: ${fL(ly || 0)}` : '<span class="muted">No earlier year loaded</span>'}</span></div>
+  ${qtyTile('Sales qty', rows, lyRows, 'vs LY', rangeTarget(fy, a, b, qtgt(fy)), a === b ? 'daily target' : 'period target')}
+  <div class="tile"><span class="lbl">Invoices · customers</span><span class="val">${fQ(invs)}</span><span class="foot">${custs} customers · ${fQ(rows.length)} lines</span></div>
+  </section>`;
+}
+function dateCum(fy, b) {
+  const pf = prevFY(fy), T = tgt(fy), d = new Date(oT(fy, b)), m = fm(d.getUTCMonth()), dd = d.getUTCDate(), dim = daysIn(fy, m);
+  const ytd = filt(fy).filter(r => r.o <= b), ytdV = sum(ytd), mtdV = sum(ytd.filter(r => r.m === m));
+  const lb = lyO(fy, b), lyY = pf ? sum(filt(pf).filter(r => r.o <= lb)) : null;
+  const lyM = pf ? sum(filt(pf).filter(r => r.o <= lb && r.m === m)) : null;
+  const yT = T ? T.slice(0, m).reduce((x, y) => x + (y || 0), 0) + (T[m] || 0) * dd / dim : null, mT = T ? (T[m] || 0) * dd / dim : null;
+  const annT = T ? T.reduce((x, y) => x + (y || 0), 0) : null;
+  return `<div class="sec-hd" style="padding-top:6px;margin-top:0"><div><div class="eyebrow">Cumulative up to ${fD(oT(fy, b))}</div><h2 style="font-size:16px">Month to date and year to date</h2></div></div>
+  <section class="tiles">
+  <div class="tile hero"><span class="lbl">${MON[m]} 1 – ${dd} (MTD)</span><span class="val">${fLn(mtdV)}${uTag()}</span>
+    <span class="foot">${mT ? chipA(pct(mtdV, mT)) + ' of pro-rata ' + fL(mT) : ''}${lyM ? ' ' + chipG((mtdV / lyM - 1) * 100) + ' vs LY' : ''}</span>${T && T[m] ? `<div class="meter"><i style="width:${Math.min(100, pct(mtdV, T[m]))}%"></i></div><span class="foot muted">${fP(pct(mtdV, T[m]))} of full-month target ${fL(T[m])}</span>` : ''}</div>
+  <div class="tile hero"><span class="lbl">Apr 1 – ${dd} ${MON[m]} (YTD)</span><span class="val">${fLn(ytdV)}${uTag()}</span>
+    <span class="foot">${fAlt(ytdV)}${annT ? ' · ' + fP(pct(ytdV, annT)) + ' of annual ABP' : ''}</span>${annT ? `<div class="meter"><i style="width:${Math.min(100, pct(ytdV, annT))}%"></i></div>` : ''}</div>
+  <div class="tile"><span class="lbl">YTD vs target</span><span class="val">${yT ? fP(pct(ytdV, yT)) : '–'}</span>
+    <span class="foot">${yT ? `${ytdV >= yT ? '<span class="chip up">Ahead</span>' : '<span class="chip dn">Behind</span>'} Target ${fL(yT)} · ${ytdV >= yT ? 'ahead by' : 'short by'} ${fL(Math.abs(ytdV - yT))}` : '<span class="muted">No target</span>'}</span></div>
+  <div class="tile"><span class="lbl">YTD vs last year</span><span class="val" style="color:${lyY ? (ytdV >= lyY ? 'var(--good)' : 'var(--bad)') : 'inherit'}">${lyY ? (ytdV >= lyY ? '+' : '') + fP((ytdV / lyY - 1) * 100) : '–'}</span>
+    <span class="foot">${lyY ? `FY ${pf}: ${fL(lyY)}` : '<span class="muted">No earlier year loaded</span>'}</span></div>
+  ${qtyTile('YTD qty', ytd, pf ? filt(pf).filter(r => r.o <= lb) : null, 'vs LY', qtPro(fy, m, dd / dim), 'target to date')}
+  </section>`;
+}
+function rangeChart(fy, a, b) {
+  const rows = filt(fy).filter(r => r.o >= a && r.o <= b), n = b - a + 1, v = new Array(n).fill(0); rows.forEach(r => v[r.o - a] += r.amt);
+  const req = v.map((_, i) => dayTarget(fy, a + i));
+  const W = 1260, H = 250, pad = { t: 12, r: 8, b: 26, l: 46 }, max = niceMax(L(Math.max(...v, ...req.map(x => x || 0))));
+  const iw = (W - pad.l - pad.r) / n, bw = Math.max(1, iw - (iw > 8 ? 3 : 1)), sy = x => (H - pad.b) - (H - pad.t - pad.b) * (L(x) / max), step = Math.ceil(n / 12);
+  let s = yAxis(W, H, pad, max, fAx, 4);
+  for (let i = 0; i < n; i++) { const x = pad.l + iw * i + (iw - bw) / 2, d = new Date(oT(fy, a + i));
+    s += rbar(x, sy(v[i]), bw, (H - pad.b) - sy(v[i]), FYCOL[fy]);
+    if (req[i]) s += `<line x1="${x - 1}" x2="${x + bw + 1}" y1="${sy(req[i])}" y2="${sy(req[i])}" stroke="var(--tgt)" stroke-width="1.5" stroke-dasharray="3 2"/>`;
+    if (i % step === 0 || i === n - 1) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${d.getUTCDate()} ${MON[fm(d.getUTCMonth())]}</text>`;
+    s += `<rect data-tip="${i}" x="${pad.l + iw * i}" y="${pad.t}" width="${iw}" height="${H - pad.t - pad.b}" fill="transparent"/>`; }
+  s += `<line class="axis" x1="${pad.l}" x2="${W - pad.r}" y1="${H - pad.b}" y2="${H - pad.b}"/>`;
+  return { html: `<div class="legend"><span><i style="background:${FYCOL[fy]}"></i>Daily sales</span>${tgt(fy) ? '<span><i class="dash"></i>Needed per working day</span>' : ''}<span class="muted">${chartUnit()}</span></div><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily sales, ${dLabel(fy, a, b)}">${s}</svg>`,
+    tip: k => { const i = +k, inv = new Set(rows.filter(r => r.o === a + i).map(r => r.inv)).size; return `<b>${fD(oT(fy, a + i))}</b>` + tr(FYCOL[fy], 'Sales', fL(v[i])) + tr('', 'Invoices', inv) + (req[i] ? tr('', 'vs needed', fP(pct(v[i], req[i]))) : ''); } };
+}
+function catTableP(fy, key, label, limit, pred, lyPred, lyH) {
+  const pf = prevFY(fy), o = key === 'cc' ? { noCC: true } : {}, rows = filt(fy, o).filter(pred), tot = sum(rows), cur = groupSum(rows, key);
+  const lyR = pf ? filt(pf, o).filter(lyPred) : [], ly = groupSum(lyR, key);
+  const list = [...cur.entries()].sort((x, y) => y[1] - x[1]); if (!list.length) return '<div class="empty">No sales in this period</div>';
+  const mx = list[0][1], shown = list.slice(0, limit), rest = list.slice(limit), restV = rest.reduce((x, y) => x + y[1], 0);
+  return `<div class="tbl-wrap"><table><thead><tr><th>${label}</th><th class="n">${UNIT.name}</th><th class="n">Share</th><th class="n">${lyH}</th><th class="n">Growth</th></tr></thead><tbody>${shown.map(([k, v]) => { const l = ly.get(k); return `<tr><td>${esc(k)}</td><td class="n"><span class="bar" style="width:${Math.max(2, v / mx * 60)}px"></span>${fLn(v)}</td><td class="n">${fP(pct(v, tot))}</td><td class="n muted">${l ? fLn(l) : '–'}</td><td class="n">${l ? chipG((v / l - 1) * 100) : '<span class="chip up">new</span>'}</td></tr>`; }).join('')}${rest.length ? `<tr><td class="muted">${rest.length} more</td><td class="n">${fLn(restV)}</td><td class="n">${fP(pct(restV, tot))}</td><td></td><td></td></tr>` : ''}</tbody>
+  <tfoot><tr><td>Total</td><td class="n">${fLn(tot)}</td><td class="n">100%</td><td class="n muted">${pf ? fLn(sum(lyR)) : '–'}</td><td></td></tr></tfoot></table></div>`;
+}
+function dateBounds(fy) { const c = ctx(fy); return { min: 0, max: c.asOfO }; }
+function vDateDash() {
+  const fy = S.fy, { max } = dateBounds(fy); let a = Math.max(0, Math.min(S.dr.a, max)), b = Math.max(a, Math.min(S.dr.b, max)); S.dr = { a, b };
+  const one = a === b, sp = dSpec(fy, a, b), la = lyO(fy, a), lb = lyO(fy, b), lyPred = r => r.o >= la && r.o <= lb;
+  const R = rangeChart(fy, a, b), d = new Date(oT(fy, b)), m = fm(d.getUTCMonth()), Dd = one ? dailyChart(fy, m, d.getUTCDate()) : null;
+  const html = `<div class="view">
+  <div class="sec-hd" style="border-top:0;margin-top:0;padding-top:0"><div><div class="eyebrow">Date view · FY ${fy}</div><h2>${dLabel(fy, a, b)}</h2></div>
+    <div class="row">${one ? `<button class="btn" data-step="-1" ${a <= 0 ? 'disabled' : ''}>‹ Previous day</button><button class="btn" data-step="1" ${b >= max ? 'disabled' : ''}>Next day ›</button>` : ''}
+    <div class="seg" role="group" aria-label="Quick dates"><button data-q="day">Latest day</button><button data-q="7">Last 7 days</button><button data-q="mtd">This month</button></div><button class="btn" data-q="clear">Full year</button></div></div>
+  ${dateTiles(fy, a, b)}
+  ${dateCum(fy, b)}
+  ${one ? `<section class="card" id="cD"><div class="hd"><h2>${fD(oT(fy, a))} within ${mLabel(fy, m)}</h2><span class="note">Daily sales for the month</span></div>${Dd.html}</section>`
+        : `<section class="card" id="cR"><div class="hd"><h2>Daily sales · ${dLabel(fy, a, b)}</h2></div>${R.html}</section>`}
+  <div class="grid2">
+    <section class="card"><div class="hd"><h2>By customer group</h2><span class="note">vs same ${one ? 'date' : 'dates'} last year</span></div>${catTableP(fy, 'cc', 'Customer group', 12, sp.pred, lyPred, 'LY same ' + (one ? 'date' : 'dates'))}</section>
+    <section class="card"><div class="hd"><h2>By product category</h2><span class="note">vs same ${one ? 'date' : 'dates'} last year</span></div>${catTableP(fy, 'pc', 'Product category', 14, sp.pred, lyPred, 'LY same ' + (one ? 'date' : 'dates'))}</section>
+  </div>
+  <section class="card"><div class="hd"><h2>Top 10 parts · ${sp.label}</h2></div>${topParts(fy, 10, sp.pred)}</section>
+  ${monthSales(fy, sp)}
+  </div>`;
+  $('#main').innerHTML = html;
+  if (one) { bindTips($('#cD'), Dd.tip); const day = d.getUTCDate(); $('#cD').querySelectorAll('rect[data-tip]').forEach(el => { el.style.cursor = 'pointer'; el.addEventListener('click', () => { const o = iso2o(fy, `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(+el.dataset.tip).padStart(2, '0')}`); if (o != null && o <= max) { hideTip(); setDates(o, o); } }); }); }
+  else { bindTips($('#cR'), R.tip); $('#cR').querySelectorAll('rect[data-tip]').forEach(el => { el.style.cursor = 'pointer'; el.addEventListener('click', () => { hideTip(); const o = a + +el.dataset.tip; setDates(o, o); }); }); }
+  document.querySelectorAll('[data-step]').forEach(btn => btn.onclick = () => { const o = a + +btn.dataset.step; setDates(o, o); });
+  document.querySelectorAll('[data-q]').forEach(btn => btn.onclick = () => { const q = btn.dataset.q; if (q === 'clear') { S.dr = null; refreshAll(); return; } const mx = max, dmx = new Date(oT(fy, mx)); if (q === 'day') setDates(mx, mx); else if (q === '7') setDates(Math.max(0, mx - 6), mx); else setDates(mx - dmx.getUTCDate() + 1, mx); });
+  bindMonthSales(fy, sp);
+}
+function setDates(a, b) { S.dr = { a: Math.min(a, b), b: Math.max(a, b) }; S.dm = null; S.ms.q = ''; S.ms.n = 200; refreshAll(); }
+
+function qtyMonthTable(fy) {
+  const pf = prevFY(fy), c = ctx(fy), QT = qtgt(fy), q = new Array(12).fill(0), lq = new Array(12).fill(0);
+  filt(fy).forEach(r => { if (r.pc !== 'Scrap') q[r.m] += r.qty; }); if (pf) filt(pf).forEach(r => { if (r.pc !== 'Scrap') lq[r.m] += r.qty; });
+  let ca = 0, ct = 0, body = '';
+  for (let m = 0; m < 12; m++) { const done = m <= c.cm; ca += q[m]; ct += QT ? (QT[m] || 0) : 0;
+    body += `<tr${done ? '' : ' class="muted"'}><td>${MON[m]}</td><td class="n">${QT && QT[m] ? fQ(QT[m]) : '–'}</td><td class="n"><b>${done ? fQ(q[m]) : '–'}</b></td><td class="n">${QT && QT[m] && done ? chipA(pct(q[m], QT[m])) : ''}</td><td class="n">${pf ? fQ(lq[m]) : '–'}</td><td class="n">${pf && done && lq[m] ? chipG((q[m] / lq[m] - 1) * 100) : ''}</td><td class="n">${done ? fQ(ca) : ''}</td><td class="n">${QT ? fQ(ct) : '–'}</td><td class="n">${QT && done && ct ? chipA(pct(ca, ct)) : ''}</td></tr>`; }
+  const tq = q.reduce((a, b) => a + b, 0), tt = QT ? QT.reduce((a, b) => a + (b || 0), 0) : 0;
+  return `<section class="card"><div class="hd"><h2>Month-wise sales quantity · FY ${fy}</h2><span class="note">Nos, scrap excluded${QT ? '' : ' · set quantity targets in the Targets tab'}</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Month</th><th class="n">Qty target</th><th class="n">Actual qty</th><th class="n">Achieved</th><th class="n">FY ${pf || '–'}</th><th class="n">Growth</th><th class="n">Cum. qty</th><th class="n">Cum. target</th><th class="n">Cum. ach.</th></tr></thead>
+  <tbody>${body}</tbody><tfoot><tr><td>Total</td><td class="n">${tt ? fQ(tt) : '–'}</td><td class="n">${fQ(tq)}</td><td class="n">${tt ? fP(pct(tq, tt)) : ''}</td><td class="n">${pf ? fQ(lq.reduce((a, b) => a + b, 0)) : '–'}</td><td></td><td></td><td></td><td></td></tr></tfoot></table></div></section>`;
+}
+
+function vMonthly() {
+  const fy = S.fy, pf = prevFY(fy), c = ctx(fy), rows = filt(fy), cur = byMonth(rows), prev = pf ? byMonth(filt(pf)) : null, T = tgt(fy);
+  let ca = 0, ct = 0, cl = 0, body = '';
+  for (let m = 0; m < 12; m++) {
+    const done = m <= c.cm; ca += cur[m]; ct += T ? (T[m] || 0) : 0; cl += prev ? prev[m] : 0;
+    const partial = m === c.cm && !c.closed;
+    body += `<tr${done ? '' : ' class="muted"'}><td>${MON[m]}${partial ? ' <span class="chip mid">to ' + c.dd + '</span>' : ''}</td><td class="n">${T ? fLn(T[m]) : '–'}</td><td class="n"><b>${done ? fLn(cur[m]) : '–'}</b></td><td class="n">${T && done ? chipA(pct(cur[m], T[m])) : ''}</td><td class="n">${prev ? fLn(prev[m]) : '–'}</td><td class="n">${prev && done && prev[m] ? chipG((cur[m] / prev[m] - 1) * 100) : ''}</td><td class="n">${done ? fLn(ca) : ''}</td><td class="n">${T ? fLn(ct) : '–'}</td><td class="n">${T && done ? chipA(pct(ca, ct)) : ''}</td></tr>`;
+  }
+  const tot = sum(rows), annT = T ? T.reduce((a, b) => a + (b || 0), 0) : null;
+  // heatmap category × month
+  const cats = [...groupSum(rows, 'pc').entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]);
+  const cell = new Map(); let hmax = 0; for (const r of rows) { const k = r.pc + '|' + r.m; const v = (cell.get(k) || 0) + r.amt; cell.set(k, v); }
+  for (const v of cell.values()) hmax = Math.max(hmax, v);
+  const heat = cats.map(k => { let rt = 0; const tds = MON.map((_, m) => { const v = cell.get(k + '|' + m) || 0; rt += v; const a = v ? 0.1 + 0.75 * (v / hmax) : 0; return `<td class="n" style="background:rgba(var(--heat),${a.toFixed(2)});${a > .5 ? 'color:#fff' : ''}" title="${esc(k)} · ${MON[m]}: ${fL(v)}">${v ? fLn(v) : ''}</td>`; }).join(''); return `<tr><td>${esc(k)}</td>${tds}<td class="n"><b>${fLn(rt)}</b></td></tr>`; }).join('');
+  const prevSP = pf ? byMonth(filt(pf, { upto: c.lyUpto })) : null;
+  const qs = [0, 1, 2, 3].map(q => { const a = cur.slice(q * 3, q * 3 + 3).reduce((x, y) => x + y, 0), t = T ? T.slice(q * 3, q * 3 + 3).reduce((x, y) => x + (y || 0), 0) : null, part = !c.closed && c.cm >= q * 3 && c.cm < q * 3 + 3, src = part ? prevSP : prev, p = src ? src.slice(q * 3, q * 3 + 3).reduce((x, y) => x + y, 0) : null; return { a, t, p, part, future: !c.closed && c.cm < q * 3 }; });
+  $('#main').innerHTML = `<div class="view">
+  <section class="tiles">${qs.map((q, i) => `<div class="tile"><span class="lbl">Q${i + 1} · ${MON[i * 3]}–${MON[i * 3 + 2]}</span><span class="val">${q.a ? fLn(q.a) + uTag() : '–'}</span><span class="foot">${q.future ? (q.t ? 'Target ' + fL(q.t) : 'Not started') : `${q.t ? chipA(pct(q.a, q.t)) + ' of ' + fL(q.t) : ''} ${q.p && q.a ? chipG((q.a / q.p - 1) * 100) + (q.part ? ' vs LY same days' : ' vs LY') : ''}`}${q.part ? ' · in progress' : ''}</span></div>`).join('')}</section>
+  <section class="card"><div class="hd"><h2>Month-wise sales report · FY ${fy}</h2><span class="note">${UNIT.name}${T ? '' : ' · set targets in the Targets tab'}</span><span class="sp"><button class="btn" id="csvMonth">Export to Excel</button></span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Month</th><th class="n">ABP target</th><th class="n">Actual</th><th class="n">Achieved</th><th class="n">FY ${pf || '–'}</th><th class="n">Growth</th><th class="n">Cum. actual</th><th class="n">Cum. target</th><th class="n">Cum. ach.</th></tr></thead>
+  <tbody>${body}</tbody><tfoot><tr><td>Total</td><td class="n">${annT ? fLn(annT) : '–'}</td><td class="n">${fLn(tot)}</td><td class="n">${annT ? fP(pct(tot, annT)) : ''}</td><td class="n">${prev ? fLn(prev.reduce((a, b) => a + b, 0)) : '–'}</td><td></td><td></td><td></td><td></td></tr></tfoot></table></div></section>
+  ${qtyMonthTable(fy)}
+  <section class="card"><div class="hd"><h2>Product category by month</h2><span class="note">${UNIT.name} · darker cells are larger</span></div>
+  <div class="tbl-wrap heat"><table><thead><tr><th>Category</th>${MON.map(m => `<th class="n">${m}</th>`).join('')}<th class="n">Total</th></tr></thead><tbody>${heat}</tbody></table></div></section>
+  </div>`;
+  $('#csvMonth').onclick = () => { const L2 = [['Month', 'ABP target', 'Actual', 'Achieved %', 'FY ' + (pf || ''), 'Growth %']]; for (let m = 0; m < 12; m++) L2.push([MON[m], T ? T[m] : '', cur[m].toFixed(2), T && T[m] ? (cur[m] / T[m] * 100).toFixed(1) : '', prev ? prev[m].toFixed(2) : '', prev && prev[m] ? ((cur[m] / prev[m] - 1) * 100).toFixed(1) : '']); download(`PMI_monthwise_${fy}.xlsx`, L2); };
+}
+
+function vCustomers() {
+  const c = ctx(S.fy), pf = prevFY(S.fy);
+  const m = new Map(); const add = (fy, r, ytd) => { let o = m.get(r.cust); if (!o) { o = { cust: r.cust, cc: r.cc, y: {}, ytdLy: 0 }; m.set(r.cust, o); } o.y[fy] = (o.y[fy] || 0) + r.amt; if (ytd) o.ytdLy += r.amt; };
+  for (const fy of FYS) for (const r of filt(fy)) add(fy, r, fy === pf && r.o <= c.lyUpto);
+  let list = [...m.values()]; const q = S.cust.q.toLowerCase(); if (q) list = list.filter(o => o.cust.toLowerCase().includes(q) || String(o.cc).toLowerCase().includes(q));
+  const tot = sum(filt(S.fy));
+  const key = { cust: o => o.cust, cc: o => o.cc, cur: o => o.y[S.fy] || 0, g: o => o.ytdLy ? (o.y[S.fy] || 0) / o.ytdLy : -1e9 };
+  FYS.forEach(f => key['y' + f] = o => o.y[f] || 0);
+  const kf = key[S.cust.sort] || key.cur; list.sort((a, b) => { const x = kf(a), y = kf(b); return (x > y ? 1 : x < y ? -1 : 0) * S.cust.dir; });
+  const th = (k, t, n) => `<th class="sort${n ? ' n' : ''}" data-s="${k}">${t}${S.cust.sort === k ? (S.cust.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Customers</h2><span class="note">Sales by financial year, ${UNIT.name} · click a customer to see its invoices</span><span class="sp row"><input type="search" id="cq" placeholder="Search customer" value="${esc(S.cust.q)}" aria-label="Search customer"><button class="btn" id="csvCust">Export to Excel</button></span></div>
+  <div class="tbl-wrap"><table><thead><tr>${th('cust', 'Customer')}${th('cc', 'Group')}${FYS.slice().reverse().map(f => th('y' + f, 'FY ' + f, 1)).join('')}${th('cur', 'Share ' + S.fy, 1)}${th('g', 'Growth (same period)', 1)}</tr></thead>
+  <tbody>${list.map(o => `<tr class="click" data-c="${esc(o.cust)}"><td class="wrap-t">${esc(o.cust)}</td><td>${esc(o.cc)}</td>${FYS.slice().reverse().map(f => `<td class="n${f === S.fy ? '' : ' muted'}">${o.y[f] ? (f === S.fy ? '<b>' + fLn(o.y[f]) + '</b>' : fLn(o.y[f])) : '–'}</td>`).join('')}<td class="n">${o.y[S.fy] ? fP(pct(o.y[S.fy], tot)) : '–'}</td><td class="n">${o.ytdLy ? chipG(((o.y[S.fy] || 0) / o.ytdLy - 1) * 100) : o.y[S.fy] ? '<span class="chip up">new</span>' : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">No customers match</td></tr>'}</tbody></table></div></section></div>`;
+  $('#cq').oninput = e => { S.cust.q = e.target.value; const p = e.target.selectionStart; vCustomers(); const i = $('#cq'); i.focus(); i.setSelectionRange(p, p); };
+  document.querySelectorAll('th[data-s]').forEach(t => t.onclick = () => { const k = t.dataset.s; if (S.cust.sort === k) S.cust.dir *= -1; else { S.cust.sort = k; S.cust.dir = (k === 'cust' || k === 'cc') ? 1 : -1; } vCustomers(); });
+  document.querySelectorAll('tr[data-c]').forEach(t => t.onclick = () => { S.inv.cust = t.dataset.c; S.inv.q = ''; S.dm = null; go('invoices'); });
+  const yrs = FYS.slice().reverse();
+  $('#csvCust').onclick = () => download(`PMI_customers_${S.fy}.xlsx`, [['Customer', 'Customer group', ...yrs.map(f => 'FY ' + f + ' (₹)'), 'Share of FY ' + S.fy + ' %', 'FY ' + (pf || '') + ' same period (₹)', 'Growth %'],
+    ...list.map(o => [o.cust, o.cc, ...yrs.map(f => +(o.y[f] || 0).toFixed(2)), tot ? +((o.y[S.fy] || 0) / tot * 100).toFixed(2) : '', +o.ytdLy.toFixed(2), o.ytdLy ? +(((o.y[S.fy] || 0) / o.ytdLy - 1) * 100).toFixed(2) : '']),
+    ['Total', '', ...yrs.map(f => +list.reduce((a, o) => a + (o.y[f] || 0), 0).toFixed(2)), '', +list.reduce((a, o) => a + o.ytdLy, 0).toFixed(2), '']], null, 'Customers');
+}
+
+function vProducts() {
+  const c = ctx(S.fy), pf = prevFY(S.fy), P = S.prod, byCat = P.by === 'cat';
+  const m = new Map(); const kf = r => byCat ? r.pc : r.part;
+  for (const r of filt(S.fy)) { const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set() }; m.set(k, o); } o.qty += r.qty; o.amt += r.amt; o.n.add(r.part); }
+  if (pf) for (const r of filt(pf, { upto: c.lyUpto })) { const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set() }; m.set(k, o); } o.ly += r.amt; }
+  let list = [...m.values()]; const q = P.q.toLowerCase(); if (q) list = list.filter(o => (o.part + ' ' + o.desc + ' ' + o.pc + ' ' + o.cc).toLowerCase().includes(q));
+  const keys = { k: o => o.k, desc: o => o.desc, pc: o => o.pc, qty: o => o.qty, amt: o => o.amt, rate: o => o.qty ? o.amt / o.qty : 0, ly: o => o.ly, g: o => o.ly ? o.amt / o.ly : -1e9 };
+  const sk = keys[P.sort] || keys.amt; list.sort((a, b) => { const x = sk(a), y = sk(b); return (x > y ? 1 : x < y ? -1 : 0) * P.dir; });
+  const tot = list.reduce((a, o) => a + o.amt, 0), lyt = list.reduce((a, o) => a + o.ly, 0);
+  const th = (k, t, n) => `<th class="sort${n ? ' n' : ''}" data-s="${k}">${t}${P.sort === k ? (P.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const head = byCat ? th('k', 'Category') + th('qty', 'Qty', 1) + `<th class="n">Parts</th>` + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1)
+    : th('k', 'Part') + th('desc', 'Description') + th('pc', 'Category') + th('qty', 'Qty', 1) + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1);
+  const row = o => byCat ? `<tr><td>${esc(o.k)}</td><td class="n">${fQ(o.qty)}</td><td class="n">${o.n.size}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : ''}</td></tr>`
+    : `<tr><td class="mono">${esc(o.part)}</td><td class="wrap-t">${esc(o.desc)}</td><td>${esc(o.pc)}</td><td class="n">${fQ(o.qty)}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : '<span class="chip dn">stopped</span>'}</td></tr>`;
+  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Products · FY ${S.fy} to date</h2><span class="note">${list.length} ${byCat ? 'categories' : 'parts'} · compared with FY ${pf || '–'} up to the same date</span>
+  <span class="sp row"><div class="seg"><button data-by="part" aria-pressed="${!byCat}">By part</button><button data-by="cat" aria-pressed="${byCat}">By category</button></div><input type="search" id="pq" placeholder="Search part, description, category" value="${esc(P.q)}" aria-label="Search products"><button class="btn" id="csvProd">Export to Excel</button></span></div>
+  <div class="tbl-wrap"><table><thead><tr>${head}</tr></thead><tbody>${list.slice(0, P.n).map(row).join('') || '<tr><td colspan="8" class="empty">Nothing matches</td></tr>'}</tbody>
+  <tfoot><tr><td colspan="${byCat ? 3 : 4}">Total (${list.length})</td><td class="n">${fLn(tot)}</td><td></td><td class="n muted">${fLn(lyt)}</td><td class="n">${lyt ? chipG((tot / lyt - 1) * 100) : ''}</td></tr></tfoot></table></div>
+  ${list.length > P.n ? `<div class="more"><button class="btn" id="pmore">Show ${Math.min(150, list.length - P.n)} more of ${list.length - P.n}</button></div>` : ''}</section></div>`;
+  $('#pq').oninput = e => { P.q = e.target.value; P.n = 150; const p = e.target.selectionStart; vProducts(); const i = $('#pq'); i.focus(); i.setSelectionRange(p, p); };
+  document.querySelectorAll('[data-by]').forEach(b => b.onclick = () => { P.by = b.dataset.by; P.sort = 'amt'; P.dir = -1; vProducts(); });
+  document.querySelectorAll('th[data-s]').forEach(t => t.onclick = () => { const k = t.dataset.s; if (P.sort === k) P.dir *= -1; else { P.sort = k; P.dir = ['k', 'desc', 'pc'].includes(k) ? 1 : -1; } vProducts(); });
+  const pm = $('#pmore'); if (pm) pm.onclick = () => { P.n += 150; vProducts(); };
+  $('#csvProd').onclick = () => download(`PMI_products_${S.fy}.xlsx`, [byCat ? ['Category', 'Qty', 'Amount', 'LY same period'] : ['Part', 'Description', 'Category', 'Qty', 'Amount', 'Avg rate', 'LY same period'], ...list.map(o => byCat ? [o.k, o.qty, o.amt.toFixed(2), o.ly.toFixed(2)] : [o.part, o.desc, o.pc, o.qty, o.amt.toFixed(2), o.qty ? (o.amt / o.qty).toFixed(2) : '', o.ly.toFixed(2)])]);
+}
+
+function vInvoices() {
+  const I = S.inv, rowsAll = filt(S.fy);
+  const custs = [...new Set(rowsAll.map(r => r.cust))].sort();
+  if (I.cust !== 'all' && !custs.includes(I.cust)) custs.unshift(I.cust);
+  const q = I.q.trim().toLowerCase();
+  const rows = rowsAll.filter(r => (S.dm == null || r.m === S.dm) && (!S.dr || (r.o >= S.dr.a && r.o <= S.dr.b)) && (I.cust === 'all' || r.cust === I.cust) && (!q || (r.inv + ' ' + r.cust + ' ' + r.part + ' ' + r.desc).toLowerCase().includes(q)));
+  const g = new Map(); for (const r of rows) { const k = r.inv + '|' + r.t; let o = g.get(k); if (!o) { o = { k, inv: r.inv, t: r.t, cust: r.cust, lines: [], qty: 0, amt: 0 }; g.set(k, o); } o.lines.push(r); o.qty += r.qty; o.amt += r.amt; }
+  const list = [...g.values()].sort((a, b) => b.t - a.t || (b.inv > a.inv ? 1 : -1)); const tot = sum(rows);
+  const body = list.slice(0, I.n).map(o => { const open = I.open.has(o.k);
+    return `<tr class="click" data-k="${esc(o.k)}"><td>${open ? '▾' : '▸'} ${fD(o.t)}</td><td class="mono">${esc(o.inv)}</td><td class="wrap-t">${esc(o.cust)}</td><td class="n">${o.lines.length}</td><td class="n">${fQ(o.qty)}</td><td class="n"><b>₹${nf0.format(o.amt)}</b></td></tr>` +
+      (open ? o.lines.map(r => `<tr class="lines"><td></td><td class="mono">${esc(r.part)}</td><td class="wrap-t">${esc(r.desc)} <span class="muted">· ${esc(r.pc)}</span></td><td class="n">${r.qty ? nf2.format(r.amt / r.qty) : ''}</td><td class="n">${fQ(r.qty)}</td><td class="n">₹${nf0.format(r.amt)}</td></tr>`).join('') : ''); }).join('');
+  $('#main').innerHTML = `<div class="view">
+  <section class="tiles"><div class="tile"><span class="lbl">Invoices shown</span><span class="val">${fQ(list.length)}</span><span class="foot">${fQ(rows.length)} lines</span></div><div class="tile"><span class="lbl">Value</span><span class="val">${fLn(tot)}${uTag()}</span><span class="foot">₹${nf0.format(tot)}</span></div><div class="tile"><span class="lbl">Quantity</span><span class="val">${fQ(rows.reduce((a, r) => a + r.qty, 0))}</span><span class="foot">pieces / units as invoiced</span></div></section>
+  <section class="card"><div class="hd"><h2>Invoice register · FY ${S.fy}</h2><span class="note">Click an invoice to see its lines</span>
+  <span class="sp row"><select id="im" aria-label="Month"><option value="all">All months</option>${MON.map((m, i) => `<option value="${i}" ${i === S.dm ? 'selected' : ''}>${m}</option>`).join('')}</select>
+  <select id="ic" aria-label="Customer" style="max-width:240px"><option value="all">All customers</option>${custs.map(c => `<option ${c === I.cust ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+  <input type="search" id="iq" placeholder="Invoice no., part, customer" value="${esc(I.q)}" aria-label="Search invoices"><button class="btn" id="csvInv">Export to Excel</button></span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Invoice no.</th><th>Customer</th><th class="n">Lines</th><th class="n">Qty</th><th class="n">Basic value</th></tr></thead><tbody>${body || '<tr><td colspan="6" class="empty">No invoices match these filters</td></tr>'}</tbody></table></div>
+  ${list.length > I.n ? `<div class="more"><button class="btn" id="imore">Show more (${list.length - I.n} left)</button></div>` : ''}</section></div>`;
+  $('#iq').oninput = e => { I.q = e.target.value; I.n = 100; const p = e.target.selectionStart; vInvoices(); const i = $('#iq'); i.focus(); i.setSelectionRange(p, p); };
+  $('#im').onchange = e => { S.dr = null; S.dm = e.target.value === 'all' ? null : +e.target.value; I.n = 100; refreshAll(); };
+  $('#ic').onchange = e => { I.cust = e.target.value; I.n = 100; vInvoices(); };
+  document.querySelectorAll('tr[data-k]').forEach(t => t.onclick = () => { const k = t.dataset.k; I.open.has(k) ? I.open.delete(k) : I.open.add(k); vInvoices(); });
+  const im = $('#imore'); if (im) im.onclick = () => { I.n += 100; vInvoices(); };
+  $('#csvInv').onclick = () => download(`PMI_invoices_${S.fy}.xlsx`, [['Plant', 'Invoice No', 'Invoice Date', 'Customer', 'Part No', 'Description', 'Qty', 'Rate', 'Amount', 'Product Cat', 'Customer Cat'], ...rows.map(r => [r.plant, r.inv, new Date(r.t).toISOString().slice(0, 10), r.cust, r.part, r.desc, r.qty, r.qty ? (r.amt / r.qty).toFixed(2) : '', r.amt.toFixed(2), r.pc, r.cc])]);
+}
+
+function vTargets() {
+  const can = isAdmin() || !DB;
+  const grid = (fy, kind, vals) => `<div class="tgt-grid">${MON.map((m, i) => { const v = vals[i]; const val = v ? (kind === 'v' ? (v / 1e5).toFixed(1) : String(Math.round(v))) : ''; return `<label for="t${kind}-${fy}-${i}">${m}<input type="number" step="${kind === 'v' ? '0.1' : '1'}" min="0" id="t${kind}-${fy}-${i}" value="${val}" ${can ? '' : 'disabled'}></label>`; }).join('')}</div>`;
+  $('#main').innerHTML = `<div class="view">
+  <div class="msg ${can ? 'info' : ''}">${isAdmin() ? 'Targets apply to PMI E-47, all customers. Sales value is in ₹ Lakh per month; quantity is in Nos per month (scrap excluded). Saving updates them for everyone.' : DB ? 'You can view targets. Only an Admin login can change them.' : 'Shared saving is not available in this view. Changes here apply until you reload.'}</div>
+  ${FYS.map(fy => { const t = TARGETS[fy] || [], qt = QTGT[fy] || [], tot = t.reduce((a, b) => a + (b || 0), 0), qtot = qt.reduce((a, b) => a + (b || 0), 0);
+    return `<section class="card"><div class="hd"><h2>FY ${fy}</h2><span class="sp row">${can ? `<button class="btn pri" data-save="${fy}">${DB ? 'Save for everyone' : 'Apply'}</button>` : ''}</span></div>
+    <div class="hd" style="margin:4px 0 8px"><h3 class="subh">Sales value · ₹ Lakh</h3><span class="note">Annual ${tot ? fL(tot) + ' · ' + fCr(tot) : 'not set'}${fy === '2026-27' ? ' · from 2026-27_ABP sheet, PMI OTD FILE FY 26-27' : fy === '2025-26' ? ' · from 2025-26_ABP sheet' : ''}</span>${can ? `<span class="sp"><button class="btn" data-reset="${fy}">Reset to ABP</button></span>` : ''}</div>
+    ${grid(fy, 'v', t)}
+    <div class="hd" style="margin:16px 0 8px"><h3 class="subh">Sales quantity · Nos</h3><span class="note">Annual ${qtot ? fQ(qtot) + ' Nos' : 'not set'} · entered manually</span>${can ? `<span class="sp"><button class="btn" data-qfill="${fy}">Copy last year's quantity</button></span>` : ''}</div>
+    ${grid(fy, 'q', qt)}</section>`; }).join('')}
+  <div id="tmsg"></div></div>`;
+  document.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => { const fy = b.dataset.reset; MON.forEach((_, i) => { const v = ABP[fy][i]; $(`#tv-${fy}-${i}`).value = v ? (v / 1e5).toFixed(1) : ''; }); });
+  document.querySelectorAll('[data-qfill]').forEach(b => b.onclick = () => { const fy = b.dataset.qfill, pf = prevFY(fy); if (!pf) { toast('No earlier year loaded.'); return; } const q = new Array(12).fill(0); DATA[pf].rows.forEach(r => { if (r.pc !== 'Scrap') q[r.m] += r.qty; }); MON.forEach((_, i) => $(`#tq-${fy}-${i}`).value = q[i] ? Math.round(q[i]) : ''); toast(`Filled with FY ${pf} actual quantity. Adjust, then save.`); });
+  document.querySelectorAll('[data-save]').forEach(b => b.onclick = async () => {
+    const fy = b.dataset.save, rd = (k, mul) => MON.map((_, i) => { const v = parseFloat($(`#t${k}-${fy}-${i}`).value); return isFinite(v) && v > 0 ? Math.round(v * mul) : null; });
+    TARGETS[fy] = rd('v', 1e5); QTGT[fy] = rd('q', 1); const m = $('#tmsg');
+    if (!DB) { m.innerHTML = `<div class="msg ok">FY ${fy} targets applied for this session.</div>`; return; }
+    b.disabled = true; try { await DB.doc('settings/targets').set(Object.assign({}, serialTargets(), { updatedAt: new Date().toISOString(), by: MY_ID || null })); m.innerHTML = `<div class="msg ok">FY ${fy} value and quantity targets saved for everyone.</div>`; }
+    catch (e) { m.innerHTML = `<div class="msg err">Could not save targets (${esc(e.code || e.message)}). Check that you have edit access, then try again.</div>`; }
+    b.disabled = false;
+  });
+}
+const serialTargets = () => { const o = {}; for (const fy of FYS) { o['fy' + fy.replace('-', '_')] = TARGETS[fy] || []; o['qfy' + fy.replace('-', '_')] = QTGT[fy] || []; o['abp' + fy.replace('-', '_')] = ABP[fy] || []; } return o; };
+
+/* ---------- data tab: upload ---------- */
+let PENDING = null;
+function vData() {
+  const can = isAdmin();
+  const rowsHtml = FYS.map(fy => { const D = DATA[fy], rs = D.rows, tot = sum(rs), mn = rs.length ? Math.min(...rs.map(r => r.t)) : null;
+    return `<tr><td><b>FY ${fy}</b></td><td>${D.meta.kind === 'uploaded' ? `<span class="pill" style="color:var(--good);background:var(--good-bg)"><span class="dot"></span>Uploaded</span> ${esc(D.meta.file || '')}<div class="muted">${D.meta.at ? fD(Date.parse(D.meta.at)) : ''}${D.meta.byName ? ' · ' + esc(D.meta.byName) : ''}</div>` : `<span class="pill" style="color:var(--ink-2);background:var(--line-2)"><span class="dot"></span>Built-in</span> ${esc(D.meta.src)}`}</td><td class="n">${fQ(rs.length)}</td><td>${mn ? fD(mn) + ' – ' + fD(D.asOfT) : '–'}</td><td class="n">${fL(tot)}</td><td>${D.meta.kind === 'uploaded' && can ? `<button class="btn" data-revert="${fy}">Use built-in</button>` : ''}</td></tr>`; }).join('');
+  $('#main').innerHTML = `<div class="view">
+  <section class="card"><div class="hd"><h2>Data in this tracker</h2><span class="note">PMI E-47 only · basic value before tax, all customers</span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Year</th><th>Source</th><th class="n">Lines</th><th>Dates</th><th class="n">Total</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div></section>
+  <section class="card"><div class="hd"><h2>Upload the latest invoice register</h2><span class="note">The OTD file (.xlsx) with an "Invoice Register" or "Dispatch Report" sheet · app version 20-Nov-2026 excel</span></div>
+  <div class="grid32"><div style="display:grid;gap:12px">
+  <label class="drop" id="drop" for="file"><b>Choose the OTD Excel file</b><br><span class="muted">or drop it here · the year is detected from invoice dates</span><input type="file" id="file" accept=".xlsx,.xlsm,.xls" hidden></label>
+  <div id="up"></div></div>
+  <div class="msg"><b>How the update works</b><dl class="kv" style="margin-top:8px"><dt>Reads</dt><dd>Invoice No., Invoice Date, Customer Name, Part No., Part Description, Dispatch Qty, Total / Basic Amt, Product Cat, Customer Cat, Plant</dd><dt>Replaces</dt><dd>All lines for the detected financial year</dd><dt>Who sees it</dt><dd>${can ? 'Everyone who opens this tracker, after you press Save' : DB ? 'Only editors can save an upload for everyone. You can still preview it here.' : 'Only you, until you reload'}</dd></dl></div></div></section>
+  <section class="card"><div class="hd"><h2>Backup</h2><span class="note">All three years of data plus value and quantity targets in one file</span></div>
+  <div class="row"><button class="btn" id="bkDown">Download backup file</button>${can || !DB ? `<label class="btn" for="bkFile" style="cursor:pointer">Restore from backup file…</label><input type="file" id="bkFile" accept=".json" hidden>` : ''}</div>
+  <p class="muted" style="margin:10px 0 0;font-size:12.5px">Restoring replaces each year that is in the file${DB ? ' for everyone' : ''}. Keep backup files private: they contain customer names, rates and values.</p><div id="bkMsg" style="margin-top:10px"></div></section></div>`;
+  const f = $('#file'), dr = $('#drop');
+  f.onchange = () => f.files[0] && readFile(f.files[0]);
+  dr.addEventListener('dragover', e => { e.preventDefault(); dr.classList.add('on'); }); dr.addEventListener('dragleave', () => dr.classList.remove('on'));
+  dr.addEventListener('drop', e => { e.preventDefault(); dr.classList.remove('on'); const x = e.dataTransfer.files[0]; if (x) readFile(x); });
+  document.querySelectorAll('[data-revert]').forEach(b => b.onclick = async () => { const fy = b.dataset.revert; b.disabled = true; try { await DB.doc('uploads/fy-' + fy).delete(); setFY(fy, decode(fy, SEED[fy]), { kind: 'built-in', src: SEED[fy].src }); refreshAll(); } catch (e) { b.disabled = false; alertMsg('Could not switch back (' + (e.code || e.message) + ').'); } });
+  if (PENDING) showPending();
+  const bk = $('#bkDown'); if (bk) bk.onclick = () => { const o = { app: 'PMI-Sales-Tracker', version: 1, exported: new Date().toISOString(), fys: {}, targets: serialTargets() };
+    FYS.forEach(fy => { o.fys[fy] = { pack: packRecs(fy, DATA[fy].rows), meta: DATA[fy].meta }; }); downloadText(`PMI_Sales_data_backup_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(o)); };
+  const bf = $('#bkFile'); if (bf) bf.onchange = () => { const f = bf.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => restoreBackup(fr.result, f.name); fr.readAsText(f); };
+}
+async function restoreBackup(txt, name) {
+  const m = $('#bkMsg'); let o; try { o = JSON.parse(txt); } catch (e) { m.innerHTML = '<div class="msg err">That file is not a Sales Tracker backup.</div>'; return; }
+  if (!o || o.app !== 'PMI-Sales-Tracker' || !o.fys) { m.innerHTML = '<div class="msg err">That file is not a Sales Tracker backup.</div>'; return; }
+  try {
+    for (const fy of FYS) { const x = o.fys[fy]; if (!x || !x.pack || !x.pack.r || !x.pack.r.length) continue;
+      const recs = decode(fy, x.pack); m.innerHTML = `<div class="msg info">Restoring FY ${fy} (${fQ(recs.length)} lines)…</div>`;
+      PENDING = { fy, file: (x.meta && (x.meta.file || x.meta.src)) || name, sheet: 'backup', recs: recs.map(r => ({ o: r.o, inv: r.inv, cust: r.cust, part: r.part, desc: r.desc, qty: r.qty, amt: r.amt, pc: r.pc, cc: r.cc, plant: r.plant })) };
+      if (DB && isAdmin()) await savePending({ disabled: false }, true); else applyPending({ kind: 'uploaded', file: PENDING.file, at: new Date().toISOString(), byName: 'this view only' }); }
+    if (o.targets) { for (const fy of FYS) { const k = fy.replace('-', '_'); if (Array.isArray(o.targets['fy' + k])) TARGETS[fy] = o.targets['fy' + k]; if (Array.isArray(o.targets['qfy' + k])) QTGT[fy] = o.targets['qfy' + k]; if (Array.isArray(o.targets['abp' + k]) && o.targets['abp' + k].some(v => v)) ABP[fy] = o.targets['abp' + k]; }
+      if (DB && isAdmin()) await DB.doc('settings/targets').set(Object.assign({}, serialTargets(), { updatedAt: new Date().toISOString(), by: MY_ID || null })); }
+    PENDING = null; S.view = 'data'; refreshAll(); toast('Backup restored: data and targets are loaded' + (DB && isAdmin() ? ' for everyone.' : ' in this view.'));
+  } catch (e) { m.innerHTML = `<div class="msg err">Restore stopped (${esc(e.code || e.message)}).</div>`; }
+}
+function downloadText(name, text) { download(name, null, text); }
+function alertMsg(t, cls = 'err') { const u = $('#up'); if (u) u.innerHTML = `<div class="msg ${cls}">${esc(t)}</div>`; }
+function readFile(file) {
+  if (!window.XLSX) return alertMsg('The Excel reader did not load. Check your connection and reload the page.');
+  alertMsg('Reading ' + file.name + '…', 'info');
+  const fr = new FileReader();
+  fr.onload = () => { try { PENDING = parseWorkbook(XLSX.read(fr.result, { type: 'array' }), file.name); showPending(); } catch (e) { PENDING = null; alertMsg(e.message || String(e)); } };
+  fr.onerror = () => alertMsg('Could not read the file.');
+  fr.readAsArrayBuffer(file);
+}
+function parseWorkbook(wb, fname) {
+  const pick = wb.SheetNames.find(n => /invoice\s*register/i.test(n)) || wb.SheetNames.find(n => /dispatch\s*report/i.test(n));
+  if (!pick) throw new Error('No sheet named "Invoice Register" or "Dispatch Report" was found in ' + fname + '.');
+  const ws = wb.Sheets[pick];
+  { let mr = -1, mc = -1; for (const k in ws) { if (k[0] === '!') continue; const c = ws[k]; if (c == null || c.v == null || c.v === '') continue; const a = XLSX.utils.decode_cell(k); if (a.r > mr) mr = a.r; if (a.c > mc) mc = a.c; }
+    if (mr >= 0) ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: mr, c: mc } }); }
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
+  const norm = s => String(s ?? '').toLowerCase().replace(/[^a-z]/g, '');
+  let hr = -1; for (let i = 0; i < Math.min(10, aoa.length); i++) { const h = (aoa[i] || []).map(norm); if (h.some(x => x.startsWith('invoiceno')) && h.some(x => x === 'invoicedate')) { hr = i; break; } }
+  if (hr < 0) throw new Error('Could not find the header row (needs "Invoice No." and "Invoice Date") in sheet ' + pick + '.');
+  const h = aoa[hr].map(norm), col = (...ps) => { for (const p of ps) { const i = h.findIndex(x => p instanceof RegExp ? p.test(x) : x === p); if (i >= 0) return i; } return -1; };
+  const C = { inv: col(/^invoiceno/), dt: col('invoicedate'), cust: col('customername'), part: col(/^partno/), desc: col(/^partdis|^partdesc/), qty: col('dispatchqty', /qty$/), amt: col('total', 'basicamt', /amount/), pc: col('productcat'), cc: col('customercat'), plant: col('plant') };
+  const miss = ['inv', 'dt', 'cust', 'amt'].filter(k => C[k] < 0); if (miss.length) throw new Error('Missing columns: ' + miss.join(', ') + '.');
+  const toT = v => { if (v instanceof Date) return Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()); if (typeof v === 'number') return Math.round((v - 25569) * 864e5); if (typeof v === 'string') { const m = v.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/); if (m) return Date.UTC(+m[3] < 100 ? 2000 + +m[3] : +m[3], +m[2] - 1, +m[1]); const p = Date.parse(v); if (!isNaN(p)) return p; } return null; };
+  const recs = []; let skipped = 0;
+  for (let i = hr + 1; i < aoa.length; i++) { const a = aoa[i]; if (!a) continue; const inv = a[C.inv], t = toT(a[C.dt]), amt = +a[C.amt];
+    if (inv == null || inv === '' || t == null || !isFinite(amt)) { if (a.some(x => x != null && x !== '')) skipped++; continue; }
+    recs.push({ inv: String(inv).trim(), t, cust: String(a[C.cust] ?? '').trim(), part: C.part >= 0 ? String(a[C.part] ?? '').trim() : '', desc: C.desc >= 0 ? String(a[C.desc] ?? '').trim() : '', qty: C.qty >= 0 ? (+a[C.qty] || 0) : 0, amt, pc: C.pc >= 0 ? normPC(a[C.pc]) : 'Unmapped', cc: C.cc >= 0 ? normCC(a[C.cc]) : 'Unmapped', plant: C.plant >= 0 && a[C.plant] ? String(a[C.plant]).trim() : PLANT }); }
+  if (!recs.length) throw new Error('No invoice lines with a date and amount were found.');
+  const fyOf = t => { const d = new Date(t), y = d.getUTCFullYear() - (d.getUTCMonth() < 3 ? 1 : 0); return y + '-' + String(y + 1).slice(2); };
+  const cnt = {}; recs.forEach(r => { const f = fyOf(r.t); cnt[f] = (cnt[f] || 0) + 1; });
+  const fy = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0];
+  if (!FYS.includes(fy)) throw new Error('This file is for FY ' + fy + '. The tracker holds FY ' + FYS.join(', ') + '.');
+  const inYr = recs.filter(r => fyOf(r.t) === fy), inFY = inYr.filter(r => normPlant(r.plant) === PLANT), out = recs.length - inYr.length, otherPlant = inYr.length - inFY.length, s = fyStart(fy);
+  if (!inFY.length) throw new Error('No PMI E-47 lines were found in this file.');
+  inFY.forEach(r => r.plant = PLANT);
+  return { fy, file: fname, sheet: pick, skipped, outside: out, otherPlant, recs: inFY.map(r => ({ ...r, o: Math.round((r.t - s) / 864e5) })) };
+}
+function normPlant(p) { const s = String(p || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return s === 'PMIE47' || s === 'PMI47' || s === 'E47' || s === 'PMIEE47' ? PLANT : p; }
+function normPC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCRAP: 'Scrap', OTHER: 'Other', LASER: 'Laser', 'LASER WITH MATERIAL': 'Laser With Material', 'DMX CHILD PART': 'DMX Child Part', 'LEG LINK SPREADER': 'Leg LINK Spreader' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
+function normCC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCHNEIDER: 'Schneider', OTHER: 'Other', DYNAPAC: 'Dynapac', AJAX: 'AJAX', EXCEPTIONAL: 'Exceptional', 'INTER COMPANY': 'Inter Company', LEGRAND: 'Legrand', EXXCILITY: 'Exxcility' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
+function showPending() {
+  const P = PENDING, u = $('#up'); if (!u || !P) return;
+  const old = DATA[P.fy], oldT = sum(old.rows), nt = P.recs.reduce((a, r) => a + r.amt, 0), mx = Math.max(...P.recs.map(r => r.t)), bm = new Array(12).fill(0);
+  P.recs.forEach(r => bm[fm(new Date(r.t).getUTCMonth())] += r.amt);
+  const can = isAdmin();
+  u.innerHTML = `<div class="msg"><b>${esc(P.file)}</b> · sheet ${esc(P.sheet)} → <b>FY ${P.fy}</b><dl class="kv" style="margin-top:8px"><dt>Lines</dt><dd>${fQ(P.recs.length)} (now ${fQ(old.rows.length)})${P.skipped ? ` · ${P.skipped} rows without date or amount skipped` : ''}${P.outside ? ` · ${P.outside} lines from other years left out` : ''}${P.otherPlant ? ` · ${P.otherPlant} lines from other plants left out` : ''}</dd><dt>Last invoice</dt><dd>${fD(mx)} (now ${fD(old.asOfT)})</dd><dt>Total</dt><dd>${fL(nt)} (now ${fL(oldT)}, change ${fL(nt - oldT)})</dd><dt>By month</dt><dd>${bm.map((v, i) => v ? MON[i] + ' ' + fLn(v) : '').filter(Boolean).join(' · ')}</dd></dl>
+  <div class="row" style="margin-top:10px">${can ? '<button class="btn gold" id="upSave">Save for everyone</button>' : ''}<button class="btn" id="upLocal">${can ? 'Preview only' : 'Use in this view'}</button><button class="btn" id="upCancel">Cancel</button></div></div><div id="upMsg"></div>`;
+  $('#upCancel').onclick = () => { PENDING = null; u.innerHTML = ''; };
+  $('#upLocal').onclick = () => { applyPending({ kind: 'uploaded', file: P.file, at: new Date().toISOString(), byName: 'this view only' }); };
+  const sv = $('#upSave'); if (sv) sv.onclick = () => savePending(sv);
+}
+function packRecs(fy, recs) {
+  const d = { plant: [], inv: [], cust: [], part: [], pc: [], cc: [] }, ix = {}; Object.keys(d).forEach(k => ix[k] = new Map());
+  const g = (k, v) => { let i = ix[k].get(v); if (i == null) { i = d[k].length; d[k].push(v); ix[k].set(v, i); } return i; };
+  const r = recs.map(x => [x.o, g('inv', x.inv), g('cust', x.cust), g('part', x.part + '|' + x.desc), Math.round(x.qty * 1000) / 1000, Math.round(x.amt * 100) / 100, g('pc', x.pc), g('cc', x.cc), g('plant', x.plant)]);
+  return { start: new Date(fyStart(fy)).toISOString().slice(0, 10), d, r };
+}
+function applyPending(meta) { const P = PENDING; setFY(P.fy, decode(P.fy, packRecs(P.fy, P.recs)), meta); PENDING = null; S.fy = P.fy; refreshAll(); }
+async function savePending(btn, silent) {
+  const P = PENDING, m = $('#upMsg') || $('#bkMsg') || { innerHTML: '' }; btn.disabled = true;
+  const ver = Date.now().toString(36), per = 900, n = Math.ceil(P.recs.length / per);
+  try {
+    for (let i = 0; i < n; i++) { m.innerHTML = `<div class="msg info">Saving part ${i + 1} of ${n}…</div>`; await DB.doc(`chunks/fy-${P.fy}-${i}`).set({ fy: P.fy, ver, i, pack: FB_ON ? JSON.stringify(packRecs(P.fy, P.recs.slice(i * per, (i + 1) * per))) : packRecs(P.fy, P.recs.slice(i * per, (i + 1) * per)) }); }
+    const meta = { byName: MY_NAME || '', fy: P.fy, ver, chunks: n, lines: P.recs.length, total: P.recs.reduce((a, r) => a + r.amt, 0), file: P.file, at: new Date().toISOString(), by: MY_ID || null };
+    await DB.doc('uploads/fy-' + P.fy).set(meta);
+    LOADED_VER[P.fy] = ver; if (silent) { setFY(P.fy, decode(P.fy, packRecs(P.fy, P.recs)), { kind: 'uploaded', file: P.file, at: meta.at, byName: MY_NAME || '' }); } else applyPending({ kind: 'uploaded', file: P.file, at: meta.at, byName: MY_NAME || '' });
+  } catch (e) { btn.disabled = false; if (silent) throw e; m.innerHTML = `<div class="msg err">Saving stopped (${esc(e.code || e.message)}). ${e.code === 'quota_exceeded' ? 'The tracker storage is full.' : 'Check that you have edit access and try again.'} Nothing changed for other people.</div>`; }
+}
+
+/* ---------- app login (admin / viewer), same password scheme as the Press Metal MIS app ---------- */
+let AUTH = null, AUTH_READY = false, LOGIN = null, LG_SEL = null;
+async function hashPw(u, p) {
+  const data = new TextEncoder().encode('pmi-mis|' + String(u).trim().toLowerCase() + '|' + p);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+const authUsers = () => (AUTH && Array.isArray(AUTH.users)) ? AUTH.users : [];
+const needLogin = () => FB_ON ? !LOGIN : (authUsers().length > 0 && !LOGIN);
+const curRole = () => authUsers().length ? (LOGIN ? LOGIN.role : null) : (CAN_EDIT ? 'admin' : 'viewer');
+function isAdmin() { return curRole() === 'admin' && CAN_EDIT && !!DB; }
+const ROLE_NAME = { admin: 'Admin', viewer: 'Viewer' };
+function restoreLogin() {
+  let s = null; try { s = JSON.parse(sessionStorage.getItem('pmi-sales-login') || 'null'); } catch (e) {}
+  const u = s && authUsers().find(x => x.u === s.u && x.h === s.h);
+  LOGIN = u ? { u: u.u, name: u.name || u.u, role: u.role } : (LOGIN && authUsers().some(x => x.u === LOGIN.u) ? LOGIN : null);
+}
+function setRoleUI() {
+  const r = curRole(), pill = $('#rolePill'), so = $('#signOut');
+  pill.hidden = !r || !AUTH_READY; pill.textContent = r ? (ROLE_NAME[r] || r) + (LOGIN ? ' · ' + LOGIN.name : '') : '';
+  pill.classList.toggle('adm', r === 'admin');
+  so.hidden = !LOGIN;
+  document.querySelectorAll('#tabs button[data-v="data"],#tabs button[data-v="users"]').forEach(b => b.hidden = !isAdmin());
+  if ((S.view === 'data' || S.view === 'users') && !isAdmin()) S.view = 'dashboard';
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === S.view));
+}
+const IC_ADMIN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M3 12h18"/></svg>`;
+const IC_VIEW = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><rect x="5" y="11" width="3" height="7" rx=".5"/><rect x="10.5" y="7" width="3" height="11" rx=".5"/><rect x="16" y="4" width="3" height="14" rx=".5"/></svg>`;
+const initials = s => String(s).trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+function vCover() {
+  const us = authUsers(), adm = us.filter(u => u.role === 'admin'), vw = us.filter(u => u.role !== 'admin'), sel = us.find(u => u.u === LG_SEL);
+  const c = ctx('2026-27');
+  const tile = (k, title, sub, ic, list) => `<button type="button" class="who ${k}" data-grp="${k}" ${list.length ? '' : 'disabled'}><span class="ic">${ic}</span><span class="tx"><b>${title}</b><small>${list.length ? sub : 'No login set up yet'}</small></span><span class="arr" aria-hidden="true">›</span></button>` +
+    (LG_SEL === '#' + k && list.length > 1 ? `<div class="who-sub">${list.map(u => `<button type="button" data-u="${esc(u.u)}">${esc(u.name || u.u)}</button>`).join('')}</div>` : '');
+  const bm = byMonth(DATA['2026-27'].rows.filter(r => !notSale(r))), mxv = Math.max(...bm, 1), lastM = ctx('2026-27').cm;
+  const bars = bm.map((v, i) => { const h = i <= lastM ? Math.max(6, v / mxv * 130) : 8; return `<rect class="cb${i < lastM ? '' : i === lastM ? ' now' : ' fut'}" x="${6 + i * 31.5}" y="${150 - h}" width="22" height="${h}" rx="2" style="animation-delay:${i * 50}ms"/>`; }).join('');
+  let acc = 0; const tot = bm.slice(0, lastM + 1).reduce((x, y) => x + y, 0) || 1; const pts = bm.slice(0, lastM + 1).map((v, i) => { acc += v; return `${23 + i * 30},${146 - acc / tot * 128}`; }).join(' ');
+  $('#main').innerHTML = `<div class="cv-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div><div class="cover">
+  <div class="cover-l">
+    <div class="cv-top"><img class="cover-logo" src="${$('.brandlogo').src}" alt="PMI"><span class="cv-live"><i></i>Live sales view</span></div>
+    <div class="cover-eyebrow">Press Metal Industries · Plant E-47</div>
+    <h1>PMI<br>Sales</h1>
+    <p class="cover-sub">Daily, monthly and yearly dispatch value for Plant&nbsp;E-47, checked against the ABP target and last year.</p>
+    <div class="cv-chart"${DATA['2026-27'].rows.length ? '' : ' hidden'}><p class="cv-cap">FY 2026-27 month by month, current month in red</p><svg viewBox="0 0 380 156" role="img" aria-label="FY 2026-27 monthly sales shape">${bars}</svg><div class="cv-months">${MON.map(m => `<span>${m[0]}</span>`).join('')}</div></div>
+    <dl class="cover-meta"><div><dt>Years</dt><dd>FY 25-26 to 26-27</dd></div><div><dt>Data up to</dt><dd>${DATA['2026-27'].rows.length ? fD(c.asOfT) : 'After sign-in'}</dd></div><div><dt>Plant</dt><dd>PMI E-47</dd></div></dl>
+  </div>
+  <div class="cover-r"><form class="signin" id="lgForm" autocomplete="off">
+    <img class="cv-mlogo" src="${$('.brandlogo').src}" alt="PMI">
+    <span class="lock">Sign in</span>
+    <h2>${sel ? 'Enter your password' : 'Who is signing in?'}</h2>
+    ${sel ? `<div class="as"><span class="av ${sel.role === 'admin' ? 'adm' : 'vw'}">${esc(initials(sel.name || sel.u))}</span><div><b>${esc(sel.name || sel.u)}</b><small>${ROLE_NAME[sel.role] || 'Viewer'} login</small></div><button type="button" id="lgChange">Change</button></div>
+      <label for="lgPass">Password<input type="password" id="lgPass" autocomplete="current-password"></label>
+      <div class="msg err" id="lgErr" hidden></div>
+      <button class="btn pri big" type="submit">Open the tracker</button>`
+    : `<div class="whos">${tile('adm', 'Admin', 'Update data, targets and logins', IC_ADMIN, adm)}${tile('vw', 'Viewer', 'Read the sales dashboard', IC_VIEW, vw)}</div>`}
+    <p class="muted" style="margin:0;font-size:12px">${new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</p>
+  </form></div></div>`;
+  document.querySelectorAll('.who').forEach(b => b.onclick = () => { const list = b.dataset.grp === 'adm' ? adm : vw; if (list.length === 1) LG_SEL = list[0].u; else LG_SEL = LG_SEL === '#' + b.dataset.grp ? null : '#' + b.dataset.grp; vCover(); if (sel || list.length === 1) setTimeout(() => $('#lgPass') && $('#lgPass').focus(), 30); });
+  document.querySelectorAll('.who-sub [data-u]').forEach(b => b.onclick = () => { LG_SEL = b.dataset.u; vCover(); setTimeout(() => $('#lgPass').focus(), 30); });
+  const ch = $('#lgChange'); if (ch) ch.onclick = () => { LG_SEL = null; vCover(); };
+  $('#lgForm').onsubmit = async e => {
+    e.preventDefault(); if (!sel) return; const err = $('#lgErr'); err.hidden = true;
+    if (FB_ON) { const b = e.submitter || $('#lgForm button[type=submit]'); b.disabled = true; try { await fbSignIn(sel.u, $('#lgPass').value); LG_SEL = null; } catch (x) { err.textContent = fbMsg(x); err.hidden = false; $('#lgPass').value = ''; $('#lgPass').focus(); } b.disabled = false; return; }
+    let h; try { h = await hashPw(sel.u, $('#lgPass').value); } catch (x) { err.textContent = 'This browser cannot check passwords here. Open the page in the Claude app or a current browser.'; err.hidden = false; return; }
+    if (h !== sel.h) { err.textContent = 'That password is wrong. Try again.'; err.hidden = false; $('#lgPass').value = ''; $('#lgPass').focus(); return; }
+    LOGIN = { u: sel.u, name: sel.name || sel.u, role: sel.role }; LG_SEL = null;
+    try { sessionStorage.setItem('pmi-sales-login', JSON.stringify({ u: sel.u, h: sel.h })); } catch (x) {}
+    if (sel.role === 'admin' && !CAN_EDIT) toast('Signed in as Admin, but this page is shared with you as view-only, so saving is off.');
+    refreshAll();
+  };
+}
+function signOut() { if (FB_ON && FB) { FB.auth.signOut(); } LOGIN = null; LG_SEL = null; try { sessionStorage.removeItem('pmi-sales-login'); } catch (e) {} S.view = 'dashboard'; refreshAll(); }
+
+function vUsers() {
+  if (FB_ON) return vUsersFB();
+  const us = authUsers().map(u => ({ ...u }));
+  $('#main').innerHTML = `<div class="view">
+  <div class="msg info">Logins decide who sees Admin tools in this tracker. Admin can update data, targets and logins; Viewer can only read. Passwords work the same way as in the Press Metal MIS app, and people still need this page shared with them.</div>
+  <section class="card"><div class="hd"><h2>Logins</h2><span class="note">${us.length} users</span></div>
+  <div class="tbl-wrap"><table id="userTbl"><thead><tr><th>Login</th><th>Name</th><th>Role</th><th>New password</th><th></th></tr></thead><tbody>
+  ${us.map((u, i) => `<tr><td class="mono">${esc(u.u)}</td><td><input type="text" id="un-${i}" value="${esc(u.name || '')}" aria-label="Name"></td><td><select id="ur-${i}" aria-label="Role"><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option><option value="viewer" ${u.role !== 'admin' ? 'selected' : ''}>Viewer</option></select></td><td><input type="password" id="up-${i}" placeholder="leave blank to keep" aria-label="New password" autocomplete="new-password"></td><td><button class="btn" data-del="${i}">Delete</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">No logins yet. Anyone the page is shared with can open it without signing in.</td></tr>'}
+  </tbody></table></div>
+  <div class="row" style="margin-top:12px"><button class="btn pri" id="usSave" ${us.length ? '' : 'disabled'}>Save changes</button></div></section>
+  <section class="card"><div class="hd"><h2>Add a login</h2></div>
+  <div class="adduser"><label for="nu-u">Login name<input type="text" id="nu-u" placeholder="e.g. sales"></label><label for="nu-n">Display name<input type="text" id="nu-n" placeholder="e.g. Sales team"></label>
+  <label for="nu-r">Role<select id="nu-r"><option value="viewer">Viewer</option><option value="admin">Admin</option></select></label><label for="nu-p">Password<input type="password" id="nu-p" autocomplete="new-password"></label>
+  <button class="btn pri" id="nuAdd">Add login</button></div></section><div id="usMsg"></div></div>`;
+  const save = async list => {
+    if (list.length && !list.some(u => u.role === 'admin')) { toast('Keep at least one Admin, or nobody can manage logins.'); return false; }
+    try { await DB.doc('settings/auth').set({ users: list, updatedAt: new Date().toISOString(), by: MY_ID || null }); AUTH = { users: list };
+      if (LOGIN) { const me = list.find(x => x.u === LOGIN.u); if (me) { LOGIN.role = me.role; LOGIN.name = me.name || me.u; try { sessionStorage.setItem('pmi-sales-login', JSON.stringify({ u: me.u, h: me.h })); } catch (e) {} } }
+      else if (list.length) { const me = list.find(x => x.role === 'admin'); LOGIN = { u: me.u, name: me.name || me.u, role: 'admin' }; try { sessionStorage.setItem('pmi-sales-login', JSON.stringify({ u: me.u, h: me.h })); } catch (e) {} }
+      toast('Logins saved.'); return true;
+    } catch (e) { $('#usMsg').innerHTML = `<div class="msg err">Could not save logins (${esc(e.code || e.message)}).</div>`; return false; }
+  };
+  $('#usSave') && ($('#usSave').onclick = async () => {
+    for (let i = 0; i < us.length; i++) { us[i].name = $(`#un-${i}`).value.trim() || us[i].u; us[i].role = $(`#ur-${i}`).value; const p = $(`#up-${i}`).value; if (p) { if (p.length < 6) return toast(`Password for ${us[i].u} needs at least 6 characters.`); us[i].h = await hashPw(us[i].u, p); } }
+    if (await save(us)) refreshAll();
+  });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { const i = +b.dataset.del; if (LOGIN && us[i].u === LOGIN.u) return toast("You can't delete the login you are using."); const rest = us.filter((_, j) => j !== i); if (await save(rest)) refreshAll(); });
+  $('#nuAdd').onclick = async () => {
+    const u = $('#nu-u').value.trim().toLowerCase(), n = $('#nu-n').value.trim(), r = $('#nu-r').value, p = $('#nu-p').value;
+    if (!/^[a-z0-9._-]{2,30}$/.test(u)) return toast('Login name: 2–30 letters, numbers, dot, dash or underscore.');
+    if (us.some(x => x.u === u)) return toast('That login name is already used.');
+    if (p.length < 6) return toast('Password needs at least 6 characters.');
+    const list = us.concat([{ u, name: n || u, role: us.length ? r : 'admin', title: '', h: await hashPw(u, p) }]);
+    if (await save(list)) refreshAll();
+  };
+}
+
+/* ---------- Firebase mode (GitHub Pages / any normal website) ---------- */
+const FB_CFG = window.FIREBASE_CONFIG || null;
+const FB_ON = !(window.claude && window.claude.use) && !!(FB_CFG && FB_CFG.apiKey && !/^PASTE/i.test(FB_CFG.apiKey));
+const FB_PLACEHOLDER = !(window.claude && window.claude.use) && !!FB_CFG && !FB_ON;
+const FB_DOMAIN = '@pmi-sales.app';
+let FB = null, FB_SETUP = false, FB_UNSUB = [];
+const fbEmail = u => String(u).trim().toLowerCase() + FB_DOMAIN;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('Could not load ' + src)); document.head.appendChild(s); }); }
+async function initFirebase() {
+  try {
+    const v = '10.12.2', base = `https://www.gstatic.com/firebasejs/${v}/`;
+    await loadScript(base + 'firebase-app-compat.js'); await loadScript(base + 'firebase-auth-compat.js'); await loadScript(base + 'firebase-firestore-compat.js');
+    const app = firebase.initializeApp(FB_CFG); const auth = app.auth(), fs = app.firestore();
+    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    FB = { app, auth, fs }; DB = fs; setPill();
+    fs.doc('public/logins').onSnapshot(s => { const users = s.exists ? (s.data().users || []) : []; AUTH = { users }; FB_SETUP = !users.length; const first = !AUTH_READY; AUTH_READY = true; refreshAll(!first); },
+      e => { AUTH_READY = true; FB_ERR = e.message; refreshAll(); });
+    auth.onAuthStateChanged(async u => {
+      fbStopData();
+      if (!u) { LOGIN = null; CAN_EDIT = false; MY_ID = null; refreshAll(); return; }
+      try { const r = await fs.doc('roles/' + u.uid).get(); const d = r.exists ? r.data() : null;
+        if (!d) { await auth.signOut(); toast('This login has no access to the Sales Tracker. Ask an Admin.'); return; }
+        LOGIN = { u: d.u, name: d.name || d.u, role: d.role, uid: u.uid }; CAN_EDIT = d.role === 'admin'; MY_ID = u.uid; MY_NAME = LOGIN.name;
+        FB_UNSUB = subscribeData(fs); refreshAll();
+      } catch (e) { toast('Could not read your role: ' + e.message); }
+    });
+  } catch (e) { FB_ERR = e.message; AUTH_READY = true; refreshAll(); }
+}
+let FB_ERR = '';
+function fbStopData() {
+  FB_UNSUB.forEach(f => { try { f(); } catch (e) {} }); FB_UNSUB = [];
+  for (const fy of FYS) { if (DATA[fy].meta.kind === 'uploaded') { delete LOADED_VER[fy]; setFY(fy, decode(fy, SEED[fy]), { kind: 'built-in', src: SEED[fy].src }); } }
+  applyDefaultTargets();
+}
+async function fbSignIn(u, pw) { await FB.auth.signInWithEmailAndPassword(fbEmail(u), pw); }
+const fbMsg = e => { const c = (e && e.code) || ''; return /wrong-password|invalid-credential|invalid-login|user-not-found/.test(c) ? 'That password is wrong. Try again.' : /too-many-requests/.test(c) ? 'Too many tries. Wait a few minutes and try again.' : /weak-password/.test(c) ? 'Password needs at least 6 characters.' : /email-already-in-use/.test(c) ? 'That login name already exists in Firebase. Delete it in Firebase → Authentication first, or pick another name.' : /network/.test(c) ? 'No internet connection to Firebase.' : (e && e.message) || 'Something went wrong.'; };
+
+function vSetup() {
+  $('#main').innerHTML = `<div class="cv-bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div><div class="cover" style="grid-template-columns:1fr;max-width:520px"><div class="cover-r"><form class="signin" id="suForm" autocomplete="off">
+    <img class="cv-mlogo" style="display:block" src="${$('.brandlogo').src}" alt="PMI"><span class="lock">First-time setup</span><h2>Create the first Admin</h2>
+    <p class="muted" style="margin:0">This runs once. The Admin can then add other logins from the Users tab.</p>
+    <label for="su-u">Login name<input type="text" id="su-u" value="admin" autocomplete="username"></label>
+    <label for="su-n">Display name<input type="text" id="su-n" value="Admin"></label>
+    <label for="su-p">Password (6+ characters)<input type="password" id="su-p" autocomplete="new-password"></label>
+    <div class="msg err" id="suErr" hidden></div><button class="btn pri big" type="submit">Create Admin and open</button></form></div></div>`;
+  $('#suForm').onsubmit = async e => {
+    e.preventDefault(); const u = $('#su-u').value.trim().toLowerCase(), n = $('#su-n').value.trim() || u, p = $('#su-p').value, er = $('#suErr'); er.hidden = true;
+    if (!/^[a-z0-9._-]{2,30}$/.test(u)) { er.textContent = 'Login name: 2–30 letters, numbers, dot, dash or underscore.'; er.hidden = false; return; }
+    try { let cred; try { cred = await FB.auth.createUserWithEmailAndPassword(fbEmail(u), p); } catch (x) { if (/email-already-in-use/.test(x.code)) cred = await FB.auth.signInWithEmailAndPassword(fbEmail(u), p); else throw x; }
+      const uid = cred.user.uid, b = FB.fs.batch();
+      b.set(FB.fs.doc('roles/' + uid), { u, name: n, role: 'admin' });
+      b.set(FB.fs.doc('public/logins'), { users: [{ uid, u, name: n, role: 'admin' }] });
+      b.set(FB.fs.doc('config/setup'), { at: new Date().toISOString(), by: uid });
+      await b.commit();
+      LOGIN = { u, name: n, role: 'admin', uid }; CAN_EDIT = true; MY_ID = uid; FB_UNSUB = subscribeData(FB.fs); toast('Admin created.'); refreshAll();
+    } catch (x) { er.textContent = fbMsg(x); er.hidden = false; }
+  };
+}
+
+function vUsersFB() {
+  const us = authUsers().map(u => ({ ...u }));
+  $('#main').innerHTML = `<div class="view">
+  <div class="msg info">Logins are Firebase accounts. Admin can update data, targets and logins; Viewer can only read. To reset someone's forgotten password: delete the login here, delete the account in Firebase → Authentication, then add it again.</div>
+  <section class="card"><div class="hd"><h2>Logins</h2><span class="note">${us.length} users</span><span class="sp"><button class="btn" id="myPw">Change my password</button></span></div>
+  <div class="tbl-wrap"><table id="userTbl"><thead><tr><th>Login</th><th>Name</th><th>Role</th><th></th></tr></thead><tbody>
+  ${us.map((u, i) => `<tr><td class="mono">${esc(u.u)}</td><td><input type="text" id="un-${i}" value="${esc(u.name || '')}" aria-label="Name"></td><td><select id="ur-${i}" aria-label="Role"><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option><option value="viewer" ${u.role !== 'admin' ? 'selected' : ''}>Viewer</option></select></td><td><button class="btn" data-del="${i}">Delete</button></td></tr>`).join('')}
+  </tbody></table></div><div class="row" style="margin-top:12px"><button class="btn pri" id="usSave">Save changes</button></div></section>
+  <section class="card"><div class="hd"><h2>Add a login</h2></div>
+  <div class="adduser"><label for="nu-u">Login name<input type="text" id="nu-u" placeholder="e.g. sales"></label><label for="nu-n">Display name<input type="text" id="nu-n" placeholder="e.g. Sales team"></label>
+  <label for="nu-r">Role<select id="nu-r"><option value="viewer">Viewer</option><option value="admin">Admin</option></select></label><label for="nu-p">Password<input type="password" id="nu-p" autocomplete="new-password"></label>
+  <button class="btn pri" id="nuAdd">Add login</button></div></section></div>`;
+  const fs = FB.fs;
+  const writeList = async list => { if (!list.some(x => x.role === 'admin')) { toast('Keep at least one Admin.'); return false; } await fs.doc('public/logins').set({ users: list }); return true; };
+  $('#usSave').onclick = async () => { try { const b = fs.batch(); us.forEach((u, i) => { u.name = $(`#un-${i}`).value.trim() || u.u; u.role = $(`#ur-${i}`).value; b.set(fs.doc('roles/' + u.uid), { u: u.u, name: u.name, role: u.role }); });
+      if (!us.some(x => x.role === 'admin')) return toast('Keep at least one Admin.'); b.set(fs.doc('public/logins'), { users: us }); await b.commit(); toast('Logins saved.'); refreshAll(); } catch (e) { toast(fbMsg(e)); } };
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { const u = us[+b.dataset.del]; if (u.uid === MY_ID) return toast("You can't delete the login you are using.");
+    try { const rest = us.filter(x => x.uid !== u.uid); if (!(await writeList(rest))) return; await fs.doc('roles/' + u.uid).delete(); toast(`${u.u} removed. Also delete ${fbEmail(u.u)} in Firebase → Authentication if you want to reuse the name.`); refreshAll(); } catch (e) { toast(fbMsg(e)); } });
+  $('#nuAdd').onclick = async () => {
+    const u = $('#nu-u').value.trim().toLowerCase(), n = $('#nu-n').value.trim() || u, r = $('#nu-r').value, p = $('#nu-p').value;
+    if (!/^[a-z0-9._-]{2,30}$/.test(u)) return toast('Login name: 2–30 letters, numbers, dot, dash or underscore.');
+    if (us.some(x => x.u === u)) return toast('That login name is already used.');
+    if (p.length < 6) return toast('Password needs at least 6 characters.');
+    try { const sec = firebase.apps.find(a => a.name === 'userAdmin') || firebase.initializeApp(FB_CFG, 'userAdmin');
+      const cred = await sec.auth().createUserWithEmailAndPassword(fbEmail(u), p); const uid = cred.user.uid; await sec.auth().signOut();
+      const b = fs.batch(); b.set(fs.doc('roles/' + uid), { u, name: n, role: r }); b.set(fs.doc('public/logins'), { users: us.concat([{ uid, u, name: n, role: r }]) }); await b.commit();
+      toast('Login added.'); refreshAll(); } catch (e) { toast(fbMsg(e)); }
+  };
+  $('#myPw').onclick = async () => { const p = prompt('New password for ' + LOGIN.u + ' (6+ characters):'); if (!p) return; try { await FB.auth.currentUser.updatePassword(p); toast('Password changed.'); } catch (e) { toast(/requires-recent-login/.test(e.code) ? 'For safety, sign out and sign in again, then change the password.' : fbMsg(e)); } };
+}
+
+/* ---------- shared store ---------- */
+let DB = null, CAN_EDIT = false, MY_ID = null, MY_NAME = '', USER = null; const LOADED_VER = {};
+async function loadUpload(meta) {
+  const fy = meta.fy; if (!FYS.includes(fy) || LOADED_VER[fy] === meta.ver) return;
+  const parts = []; for (let i = 0; i < meta.chunks; i++) { const s = await DB.doc(`chunks/fy-${fy}-${i}`).get(); const d = s.exists && s.data(); if (!d || d.ver !== meta.ver) return; parts.push(typeof d.pack === 'string' ? JSON.parse(d.pack) : d.pack); }
+  const rows = parts.flatMap(p => decode(fy, p)); LOADED_VER[fy] = meta.ver;
+  let byName = meta.byName || ''; try { if (meta.by && USER) { const ps = await USER.profiles([meta.by]); byName = (ps[meta.by] && ps[meta.by].name) || ''; } } catch (e) {}
+  setFY(fy, rows, { kind: 'uploaded', file: meta.file, at: meta.at, byName }); refreshAll();
+}
+async function initStore() {
+  if (FB_ON) return initFirebase();
+  if (!window.claude || !window.claude.use) { AUTH_READY = true; refreshAll(); return; }
+  const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+  USER = user; if (user) { try { CAN_EDIT = await user.canEdit(); MY_ID = await user.id(); MY_NAME = (await user.name()) || ''; } catch (e) {} }
+  if (!db) { AUTH_READY = true; setPill(); refreshAll(); return; }
+  DB = db; setPill();
+  const authTimer = setTimeout(() => { if (!AUTH_READY) { AUTH_READY = true; refreshAll(); } }, 6000);
+  db.doc('settings/auth').onSnapshot(s => { AUTH = s.exists ? s.data() : { users: [] }; restoreLogin(); const first = !AUTH_READY; AUTH_READY = true; clearTimeout(authTimer); refreshAll(!first); }, () => { AUTH_READY = true; refreshAll(); });
+  subscribeData(db);
+}
+function subscribeData(db) {
+  const un = [];
+  un.push(db.doc('settings/targets').onSnapshot(s => { if (!s.exists) return; const d = s.data(); for (const fy of FYS) { const a = d['fy' + fy.replace('-', '_')]; if (Array.isArray(a) && a.length === 12) TARGETS[fy] = a.slice(); const q = d['qfy' + fy.replace('-', '_')]; if (Array.isArray(q) && q.length === 12) QTGT[fy] = q.slice(); const ab = d['abp' + fy.replace('-', '_')]; if (Array.isArray(ab) && ab.length === 12) ABP[fy] = ab.slice(); } refreshAll(true); }, () => {}));
+  un.push(db.collection('uploads').onSnapshot(async snap => {
+    const seen = new Set();
+    for (const doc of snap.docs) { const m = doc.data(); seen.add(m.fy); try { await loadUpload(m); } catch (e) {} }
+    for (const fy of FYS) if (!seen.has(fy) && DATA[fy].meta.kind === 'uploaded' && LOADED_VER[fy]) { delete LOADED_VER[fy]; setFY(fy, decode(fy, SEED[fy]), { kind: 'built-in', src: SEED[fy].src }); refreshAll(); }
+  }, () => {}));
+  return un;
+}
+function setPill() {
+  const p = $('#srcPill'), t = $('#srcTxt'), up = FYS.filter(f => DATA[f].meta.kind === 'uploaded');
+  p.classList.toggle('live', !!DB);
+  t.textContent = (FB_ON ? (DB ? 'Firebase' : 'Connecting') : FB_PLACEHOLDER ? 'Firebase settings not added yet' : DB ? 'Shared' : 'Offline copy') + (up.length ? ' · updated ' + up.join(', ') : ' · built-in data');
+}
+
+/* ---------- downloads ---------- */
+async function download(name, rows, raw, sheetName) {
+  if (/\.xlsx$/i.test(name) && rows) {
+    if (!window.XLSX) { toast('The Excel writer did not load. Check your connection and reload.'); return; }
+    const conv = rows.map((r, i) => i === 0 ? r : r.map(v => typeof v === 'string' && v !== '' && /^-?\d+(\.\d+)?$/.test(v) ? +v : v));
+    const ws = XLSX.utils.aoa_to_sheet(conv);
+    ws['!cols'] = conv[0].map((h, c) => ({ wch: Math.min(60, Math.max(String(h).length, ...conv.slice(1, 200).map(r => String(r[c] ?? '').length)) + 2) }));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, (sheetName || 'Data').slice(0, 31));
+    const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }), blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const dlx = window.claude && window.claude.use ? await claude.use('downloads') : null;
+    if (dlx) { try { await dlx.save({ filename: name, data: blob }); toast('Saved ' + name); } catch (e) { if (e && e.code !== 'declined') toast('Could not save the file (' + (e.code || 'error') + ').'); } return; }
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast('Saved ' + name); } catch (e) { toast('Downloads are not available in this view.'); }
+    return;
+  }
+  const csv = raw != null ? raw : rows.map(r => r.map(v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n');
+  const dl = window.claude && window.claude.use ? await claude.use('downloads') : null;
+  if (!dl) { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([(raw != null ? '' : '\ufeff') + csv], { type: raw != null ? 'application/json' : 'text/csv' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast('Saved ' + name); } catch (e) { toast('Downloads are not available in this view.'); } return; }
+  try { await dl.save({ filename: name, data: (raw != null ? '' : '\ufeff') + csv }); toast('Saved ' + name); } catch (e) { if (e && e.code !== 'declined') toast('Could not save the file (' + (e.code || 'error') + ').'); }
+}
+
+function toast(t) { let el = document.getElementById('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'msg'; el.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;box-shadow:0 6px 24px rgba(0,0,0,.18)'; document.body.appendChild(el); } el.textContent = t; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 3500); }
+/* ---------- shell ---------- */
+const VIEWS = { users: vUsers, dashboard: vDashboard, monthly: vMonthly, customers: vCustomers, products: vProducts, invoices: vInvoices, targets: vTargets, data: vData };
+function buildFilters() {
+  $('#fySeg').innerHTML = FYS.slice().reverse().map(f => `<button data-fy="${f}" aria-pressed="${f === S.fy}">${f}</button>`).join('');
+  document.querySelectorAll('[data-fy]').forEach(b => b.onclick = () => { S.fy = b.dataset.fy; S.dm = null; S.dr = null; S.inv.open.clear(); refreshAll(); });
+  const ccs = [...new Set(FYS.flatMap(f => DATA[f].rows.map(r => r.cc)))].sort();
+  if (S.cc !== 'All' && !ccs.includes(S.cc)) S.cc = 'All';
+  $('#fCC').innerHTML = `<option value="All">All customers</option>` + ccs.map(p => `<option ${p === S.cc ? 'selected' : ''}>${esc(p)}</option>`).join('');
+  $('#fCC').value = S.cc; $('#fCore').checked = S.core;
+  { const c2 = ctx(S.fy), hv = new Set(filt(S.fy).map(r => r.m)), fm2 = $('#fMonth');
+    fm2.innerHTML = `<option value="all">Full year</option>` + MON.map((n, i) => `<option value="${i}" ${(!c2.closed && i > c2.cm) || !hv.has(i) ? 'disabled' : ''}>${n} ${+S.fy.slice(0, 4) + (i >= 9 ? 1 : 0)}</option>`).join('');
+    fm2.value = S.dm == null ? 'all' : String(S.dm); const showT = ['dashboard', 'invoices'].includes(S.view); $('#fMonthWrap').hidden = !showT; $('#fDateWrap').hidden = !showT;
+    const mn = o2iso(S.fy, 0), mx = o2iso(S.fy, c2.asOfO), f1 = $('#fFrom'), f2 = $('#fTo');
+    f1.min = f2.min = mn; f1.max = f2.max = mx; f1.value = S.dr ? o2iso(S.fy, S.dr.a) : ''; f2.value = S.dr && S.dr.b !== S.dr.a ? o2iso(S.fy, S.dr.b) : ''; $('#fDateClr').hidden = !S.dr; }
+  const c = ctx(S.fy); $('#asof').textContent = `FY ${S.fy} data up to ${fD(c.asOfT)}`;
+}
+$('#fCC').onchange = e => { S.cc = e.target.value; refreshAll(); };
+function onDates() { const a = iso2o(S.fy, $('#fFrom').value), b = iso2o(S.fy, $('#fTo').value); if (a == null && b == null) { S.dr = null; refreshAll(); return; } setDates(a ?? b, b ?? a); }
+$('#fFrom').onchange = onDates; $('#fTo').onchange = onDates;
+$('#fDateClr').onclick = () => { S.dr = null; refreshAll(); };
+$('#fMonth').onchange = e => { S.dr = null; S.dm = e.target.value === 'all' ? null : +e.target.value; S.ms.q = ''; S.ms.n = 200; refreshAll(); };
+$('#fCore').onchange = e => { S.core = e.target.checked; refreshAll(); };
+const TILE_IC = {
+  rupee: '<path d="M7 5h10M7 9h10M9 5c4 0 5 2 5 4s-1 4-5 4H7l7 6"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>',
+  trend: '<path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/>',
+  box: '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+  speed: '<path d="M5 17a8 8 0 1114 0"/><path d="M12 13l4-4"/>',
+  receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  sum: '<path d="M17 5H7l6 7-6 7h10"/>'
+};
+function tileIcon(lbl) { const s = lbl.toLowerCase(); return s.includes('qty') || s.includes('quantity') ? 'box' : s.includes('target') || s.includes('abp') ? 'target' : s.includes('last year') ? 'trend' : s.includes('asking') || s.includes('daily average') ? 'speed' : s.includes('invoice') ? 'receipt' : s.includes('cumulative') || s.includes('ytd') ? 'sum' : s.includes('q1') || s.includes('q2') || s.includes('q3') || s.includes('q4') || s.includes('mtd') || s.includes('month') ? 'cal' : 'rupee'; }
+function decorate() {
+  document.querySelectorAll('#main .tile').forEach(t => { if (t.querySelector('.tic')) return; const l = t.querySelector('.lbl'); if (!l) return; const k = tileIcon(l.textContent); t.dataset.ic = k;
+    l.insertAdjacentHTML('beforebegin', `<span class="tic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${TILE_IC[k]}</svg></span>`); });
+}
+new MutationObserver(() => decorate()).observe(document.getElementById('main'), { childList: true, subtree: true });
+function refreshAll(soft) {
+  setRoleUI();
+  const locked = !AUTH_READY || needLogin();
+  document.body.classList.toggle('signed-out', locked);
+  if (locked) { hideTip(); if (!AUTH_READY) { $('#main').innerHTML = `<div class="empty" style="padding:80px 16px"><img src="${$('.brandlogo').src}" alt="" style="height:48px;margin:0 auto 14px;display:block">Opening PMI Sales…</div>`; } else if (FB_ON && !FB) { $('#main').innerHTML = `<div class="empty" style="padding:80px 16px;color:#fff">Could not start Firebase.<br><small>${esc(FB_ERR)}</small><br><small>Check firebase-config.js and your internet connection.</small></div>`; } else if (FB_ON && FB_SETUP) { if (!document.getElementById('suForm')) vSetup(); } else if (!(soft && document.getElementById('lgPass'))) vCover(); return; }
+  if (soft && (S.view === 'targets' || S.view === 'users')) return; // don't wipe inputs being edited
+  UNIT = UNITS[S.unit] || CR; document.body.classList.toggle('u-act', UNIT === AC); document.querySelectorAll('.useg [data-u]').forEach(b => b.setAttribute('aria-pressed', b.dataset.u === S.unit));
+  saveUI(); buildFilters(); setPill(); hideTip(); VIEWS[S.view]();
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+}
+function go(v) { if (!VIEWS[v] || ((v === 'data' || v === 'users') && AUTH_READY && !isAdmin())) v = 'dashboard'; S.view = v; document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); try { history.replaceState(null, '', '#' + v); } catch (e) {} refreshAll(); window.scrollTo({ top: 0 }); }
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.v));
+$('#signOut').onclick = signOut;
+document.querySelectorAll('.useg [data-u]').forEach(b => b.onclick = () => { S.unit = b.dataset.u; try { localStorage.setItem('pmiSalesUnit', S.unit); } catch (e) {} refreshAll(); });
+S.view = ['data', 'users'].includes((location.hash || '').slice(1)) ? 'dashboard' : ((location.hash || '').slice(1) || 'dashboard'); if (!VIEWS[S.view]) S.view = 'dashboard';
+refreshAll();
+initStore().catch(() => {});
+
+</script>
+
+</body></html>
