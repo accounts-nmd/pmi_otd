@@ -353,13 +353,13 @@ body.signed-out .useg{display:none}
 <main class="wrap" id="main"></main>
 <div class="tip" id="tip" hidden></div>
 
-<script type="application/json" id="seed">{"2026-27":{"start":"2026-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"2025-26":{"start":"2025-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"_targets":{"2026-27":[null,null,null,null,null,null,null,null,null,null,null,null],"2025-26":[43537315.0,42393697.0,54763697.0,40503493.0,40503493.0,54696893.0,41688493.0,41688493.0,41688493.0,46332693.0,46132693.0,46132693.0]}}</script>
+<script type="application/json" id="seed">{"2026-27":{"start":"2026-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"2025-26":{"start":"2025-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"_targets":{"2026-27":[null,null,null,null,null,null,null,null,null,null,null,null],"2025-26":[43537315.0,42393697.0,54763697.0,40503493.0,40503493.0,54696893.0,41688493.0,41688493.0,41688493.0,46332693.0,46132693.0,46132693.0],"2024-25":[null,null,null,null,null,null,null,null,null,null,null,null],"2023-24":[null,null,null,null,null,null,null,null,null,null,null,null]},"2024-25":{"start":"2024-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"},"2023-24":{"start":"2023-04-01","d":{"plant":[],"inv":[],"cust":[],"part":[],"pc":[],"cc":[]},"r":[],"src":"Not built in · upload the OTD file after sign-in"}}</script>
 <script src="firebase-config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 "use strict";
 const SEED = JSON.parse(document.getElementById('seed').textContent);
-const FYS = ['2026-27', '2025-26'];
+const FYS = ['2026-27', '2025-26', '2024-25', '2023-24'];
 const FYCOL = { '2026-27': 'var(--s1)', '2025-26': 'var(--s2)', '2024-25': 'var(--s3)', '2023-24': 'var(--s4)' };
 const MON = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
 // Lines that are not counted as sales, as in the PMI OTD Summary sheet: Customer Cat 'Inter Company' and 'Exceptional'
@@ -1036,8 +1036,8 @@ function parseWorkbook(wb, fname) {
   return { fy, file: fname, sheet: pick, skipped, outside: out, otherPlant, recs: inFY.map(r => ({ ...r, o: Math.round((r.t - s) / 864e5) })) };
 }
 function normPlant(p) { const s = String(p || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return s === 'PMIE47' || s === 'PMI47' || s === 'E47' || s === 'PMIEE47' ? PLANT : p; }
-function normPC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCRAP: 'Scrap', OTHER: 'Other', LASER: 'Laser', 'LASER WITH MATERIAL': 'Laser With Material', 'DMX CHILD PART': 'DMX Child Part', 'LEG LINK SPREADER': 'Leg LINK Spreader' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
-function normCC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCHNEIDER: 'Schneider', OTHER: 'Other', DYNAPAC: 'Dynapac', AJAX: 'AJAX', EXCEPTIONAL: 'Exceptional', 'INTER COMPANY': 'Inter Company', LEGRAND: 'Legrand', EXXCILITY: 'Exxcility' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
+function normPC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCRAP: 'Scrap', OTHER: 'Other', LASER: 'Laser', 'LASER WITH MATERIAL': 'Laser With Material', 'LASER LABOUR': 'Laser Labour', 'DMX CHILD PART': 'DMX Child Part', 'LEG LINK SPREADER': 'Leg LINK Spreader', 'DYNAPAC COMPONENTS': 'Dynapac Components', EXPORT: 'Export' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
+function normCC(x) { x = x == null ? 'Unmapped' : String(x).trim(); const M = { SCHNEIDER: 'Schneider', OTHER: 'Other', DYNAPAC: 'Dynapac', AJAX: 'AJAX', EXCEPTIONAL: 'Exceptional', 'INTER COMPANY': 'Inter Company', LEGRAND: 'Legrand', EXXCILITY: 'Exxcility', LASER: 'Laser', EXPORT: 'Export' }; return M[x.toUpperCase()] || x || 'Unmapped'; }
 function showPending() {
   const P = PENDING, u = $('#up'); if (!u || !P) return;
   const old = DATA[P.fy], oldT = sum(old.rows), nt = P.recs.reduce((a, r) => a + r.amt, 0), mx = Math.max(...P.recs.map(r => r.t)), bm = new Array(12).fill(0);
@@ -1111,7 +1111,7 @@ function vCover() {
     <h1>PMI<br>Sales</h1>
     <p class="cover-sub">Daily, monthly and yearly dispatch value for Plant&nbsp;E-47, checked against the ABP target and last year.</p>
     <div class="cv-chart"${DATA['2026-27'].rows.length ? '' : ' hidden'}><p class="cv-cap">FY 2026-27 month by month, current month in red</p><svg viewBox="0 0 380 156" role="img" aria-label="FY 2026-27 monthly sales shape">${bars}</svg><div class="cv-months">${MON.map(m => `<span>${m[0]}</span>`).join('')}</div></div>
-    <dl class="cover-meta"><div><dt>Years</dt><dd>FY 25-26 to 26-27</dd></div><div><dt>Data up to</dt><dd>${DATA['2026-27'].rows.length ? fD(c.asOfT) : 'After sign-in'}</dd></div><div><dt>Plant</dt><dd>PMI E-47</dd></div></dl>
+    <dl class="cover-meta"><div><dt>Years</dt><dd>FY 23-24 to 26-27</dd></div><div><dt>Data up to</dt><dd>${DATA['2026-27'].rows.length ? fD(c.asOfT) : 'After sign-in'}</dd></div><div><dt>Plant</dt><dd>PMI E-47</dd></div></dl>
   </div>
   <div class="cover-r"><form class="signin" id="lgForm" autocomplete="off">
     <img class="cv-mlogo" src="${$('.brandlogo').src}" alt="PMI">
