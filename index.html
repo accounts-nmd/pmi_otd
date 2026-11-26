@@ -344,7 +344,8 @@ body.signed-out .useg{display:none}
 <div class="filters"><div class="wrap">
   <div class="fld">Year <div class="seg" id="fySeg"></div></div>
   <label class="fld" for="fMonth" id="fMonthWrap">Month <select id="fMonth"></select></label>
-  <div class="fld" id="fDateWrap"><label for="fFrom">Date</label> <input type="date" id="fFrom" aria-label="From date"> <span class="muted">to</span> <input type="date" id="fTo" aria-label="To date (optional)"> <button class="btn" id="fDateClr" style="padding:4px 9px" aria-label="Clear dates">✕</button></div>
+  <div class="fld" id="fUptoWrap"><label for="fUpto">Up to</label> <input type="date" id="fUpto" aria-label="Show data up to this date"> <button class="btn" id="fUptoClr" style="padding:4px 9px" aria-label="Clear up-to date">✕</button></div>
+  <div class="fld" id="fDateWrap"><label for="fFrom">From</label> <input type="date" id="fFrom" aria-label="From date"> <span class="muted">to</span> <input type="date" id="fTo" aria-label="To date (optional)"> <button class="btn" id="fDateClr" style="padding:4px 9px" aria-label="Clear dates">✕</button></div>
   <label class="fld" for="fCC">Customer group <select id="fCC"></select></label>
   <label class="chk" for="fCore"><input type="checkbox" id="fCore"> Exclude Inter Company &amp; Exceptional (not sales)</label>
   <span class="asof" id="asof"></span>
@@ -413,15 +414,15 @@ function applyDefaultTargets() { const D = window.PMI_DEFAULTS; TARGETS = JSON.p
 applyDefaultTargets();
 
 let SAVED_UNIT = 'C'; try { SAVED_UNIT = ['L', 'C', 'A'].includes(localStorage.getItem('pmiSalesUnit')) ? localStorage.getItem('pmiSalesUnit') : 'C'; } catch (e) {}
-const S = { unit: SAVED_UNIT, dr: null, dm: null, ms: { q: '', n: 200, sort: 't', dir: -1 }, fy: '2026-27', plant: PLANT, cc: 'All', core: true, view: 'dashboard',
+const S = { unit: SAVED_UNIT, cut: null, dr: null, dm: null, ms: { q: '', n: 200, sort: 't', dir: -1 }, fy: '2026-27', plant: PLANT, cc: 'All', core: true, view: 'dashboard',
   inv: { q: '', m: 'all', cust: 'all', n: 100, open: new Set() }, prod: { q: '', by: 'part', sort: 'amt', dir: -1, n: 150 }, cust: { q: '', sort: 'cur', dir: -1 } };
 try { const v = JSON.parse(localStorage.getItem('pmiSalesUI') || '{}'); Object.assign(S, { fy: FYS.includes(v.fy) ? v.fy : S.fy, cc: v.cc || S.cc, core: v.excl === undefined ? true : !!v.excl }); } catch (e) {}
 function saveUI() { try { localStorage.setItem('pmiSalesUI', JSON.stringify({ fy: S.fy, plant: S.plant, cc: S.cc, excl: S.core })); } catch (e) {} }
 
 function filt(fy, opt = {}) {
   const D = DATA[fy]; if (!D) return [];
-  const lim = opt.upto;
-  return D.rows.filter(r => (S.plant === 'All' || r.plant === S.plant) && (opt.noCC || S.cc === 'All' || r.cc === S.cc) && (!S.core || !notSale(r)) && (lim == null || r.o <= lim));
+  const lim = opt.upto, cut = cutO(fy);
+  return D.rows.filter(r => (cut == null || r.o <= cut) && (S.plant === 'All' || r.plant === S.plant) && (opt.noCC || S.cc === 'All' || r.cc === S.cc) && (!S.core || !notSale(r)) && (lim == null || r.o <= lim));
 }
 const sum = rows => rows.reduce((a, r) => a + r.amt, 0);
 function byMonth(rows) { const a = new Array(12).fill(0); for (const r of rows) a[r.m] += r.amt; return a; }
@@ -433,10 +434,11 @@ function qtgt(fy) { const t = QTGT[fy]; return targetsOn() && t && t.some(x => x
 function qtPro(fy, m, frac) { const t = qtgt(fy); if (!t) return null; return t.slice(0, m).reduce((a, b) => a + (b || 0), 0) + (t[m] || 0) * frac; }
 function daysIn(fy, m) { const y = +fy.slice(0, 4) + (m >= 9 ? 1 : 0), mo = (m + 3) % 12; return new Date(Date.UTC(y, mo + 1, 0)).getUTCDate(); }
 function workDays(fy, m, fromDay, toDay) { const y = +fy.slice(0, 4) + (m >= 9 ? 1 : 0), mo = (m + 3) % 12; let n = 0; for (let d = fromDay; d <= toDay; d++) if (new Date(Date.UTC(y, mo, d)).getUTCDay() !== 0) n++; return n; }
+function cutO(fy) { return fy === S.fy && S.cut != null ? S.cut : null; }
 function ctx(fy) {
-  const D = DATA[fy], aT = D.asOfT, ad = new Date(aT), cm = fm(ad.getUTCMonth()), dd = ad.getUTCDate(), dim = daysIn(fy, cm);
+  const D = DATA[fy], k = cutO(fy), ao = k != null ? Math.min(D.asOfO, k) : D.asOfO, aT = k != null ? fyStart(fy) + ao * 864e5 : D.asOfT, ad = new Date(aT), cm = fm(ad.getUTCMonth()), dd = ad.getUTCDate(), dim = daysIn(fy, cm);
   const closed = cm === 11 && dd === 31;
-  return { asOfO: D.asOfO, lyUpto: closed ? 9999 : D.asOfO, asOfT: aT, cm, dd, dim, closed };
+  return { asOfO: ao, lyUpto: closed ? 9999 : ao, asOfT: aT, cm, dd, dim, closed };
 }
 
 /* ---------- tooltip ---------- */
@@ -860,14 +862,15 @@ function vMonthly() {
 function vCustomers() {
   const c = ctx(S.fy), pf = prevFY(S.fy);
   const m = new Map(); const add = (fy, r, ytd) => { let o = m.get(r.cust); if (!o) { o = { cust: r.cust, cc: r.cc, y: {}, ytdLy: 0 }; m.set(r.cust, o); } o.y[fy] = (o.y[fy] || 0) + r.amt; if (ytd) o.ytdLy += r.amt; };
-  for (const fy of FYS) for (const r of filt(fy)) add(fy, r, fy === pf && r.o <= c.lyUpto);
+  const R = S.dr, la = R ? lyO(S.fy, R.a) : null, lb = R ? lyO(S.fy, R.b) : null;
+  for (const fy of FYS) for (const r of filt(fy)) { if (R && fy === S.fy && (r.o < R.a || r.o > R.b)) continue; add(fy, r, fy === pf && (R ? r.o >= la && r.o <= lb : r.o <= c.lyUpto)); }
   let list = [...m.values()]; const q = S.cust.q.toLowerCase(); if (q) list = list.filter(o => o.cust.toLowerCase().includes(q) || String(o.cc).toLowerCase().includes(q));
-  const tot = sum(filt(S.fy));
+  const tot = sum(filt(S.fy).filter(r => !R || (r.o >= R.a && r.o <= R.b)));
   const key = { cust: o => o.cust, cc: o => o.cc, cur: o => o.y[S.fy] || 0, g: o => o.ytdLy ? (o.y[S.fy] || 0) / o.ytdLy : -1e9 };
   FYS.forEach(f => key['y' + f] = o => o.y[f] || 0);
   const kf = key[S.cust.sort] || key.cur; list.sort((a, b) => { const x = kf(a), y = kf(b); return (x > y ? 1 : x < y ? -1 : 0) * S.cust.dir; });
   const th = (k, t, n) => `<th class="sort${n ? ' n' : ''}" data-s="${k}">${t}${S.cust.sort === k ? (S.cust.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
-  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Customers</h2><span class="note">Sales by financial year, ${UNIT.name} · click a customer to see its invoices</span><span class="sp row"><input type="search" id="cq" placeholder="Search customer" value="${esc(S.cust.q)}" aria-label="Search customer"><button class="btn" id="csvCust">Export to Excel</button></span></div>
+  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Customers</h2><span class="note">Sales by financial year, ${UNIT.name}${R ? ` · FY ${S.fy} column = ${dLabel(S.fy, R.a, R.b)}, growth vs same dates last year` : S.cut != null ? ` · FY ${S.fy} column up to ${fD(c.asOfT)}` : ''} · click a customer to see its invoices</span><span class="sp row"><input type="search" id="cq" placeholder="Search customer" value="${esc(S.cust.q)}" aria-label="Search customer"><button class="btn" id="csvCust">Export to Excel</button></span></div>
   <div class="tbl-wrap"><table><thead><tr>${th('cust', 'Customer')}${th('cc', 'Group')}${FYS.slice().reverse().map(f => th('y' + f, 'FY ' + f, 1)).join('')}${th('cur', 'Share ' + S.fy, 1)}${th('g', 'Growth (same period)', 1)}</tr></thead>
   <tbody>${list.map(o => `<tr class="click" data-c="${esc(o.cust)}"><td class="wrap-t">${esc(o.cust)}</td><td>${esc(o.cc)}</td>${FYS.slice().reverse().map(f => `<td class="n${f === S.fy ? '' : ' muted'}">${o.y[f] ? (f === S.fy ? '<b>' + fLn(o.y[f]) + '</b>' : fLn(o.y[f])) : '–'}</td>`).join('')}<td class="n">${o.y[S.fy] ? fP(pct(o.y[S.fy], tot)) : '–'}</td><td class="n">${o.ytdLy ? chipG(((o.y[S.fy] || 0) / o.ytdLy - 1) * 100) : o.y[S.fy] ? '<span class="chip up">new</span>' : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">No customers match</td></tr>'}</tbody></table></div></section></div>`;
   $('#cq').oninput = e => { S.cust.q = e.target.value; const p = e.target.selectionStart; vCustomers(); const i = $('#cq'); i.focus(); i.setSelectionRange(p, p); };
@@ -880,29 +883,33 @@ function vCustomers() {
 }
 
 function vProducts() {
-  const c = ctx(S.fy), pf = prevFY(S.fy), P = S.prod, byCat = P.by === 'cat';
+  const c = ctx(S.fy), pf = prevFY(S.fy), P = S.prod, byCat = P.by === 'cat'; P.qa = P.qa || 'tot';
+  const mo = S.dr ? (S.dr.b - S.dr.a + 1) / (365 / 12) : c.closed ? 12 : c.cm + c.dd / c.dim, qv = o => P.qa === 'mon' ? o.qty / mo : P.qa === 'inv' ? (o.inv.size ? o.qty / o.inv.size : 0) : o.qty;
+  const fQa = v => P.qa === 'tot' ? fQ(v) : v >= 100 ? nf0.format(v) : nf1.format(v), qLab = P.qa === 'mon' ? 'Avg qty / month' : P.qa === 'inv' ? 'Avg qty / invoice' : 'Qty';
   const m = new Map(); const kf = r => byCat ? r.pc : r.part;
-  for (const r of filt(S.fy)) { const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set() }; m.set(k, o); } o.qty += r.qty; o.amt += r.amt; o.n.add(r.part); }
-  if (pf) for (const r of filt(pf, { upto: c.lyUpto })) { const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set() }; m.set(k, o); } o.ly += r.amt; }
+  const R = S.dr, la = R ? lyO(S.fy, R.a) : null, lb = R ? lyO(S.fy, R.b) : null;
+  for (const r of filt(S.fy)) { if (R && (r.o < R.a || r.o > R.b)) continue; const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set(), inv: new Set() }; m.set(k, o); } o.qty += r.qty; o.amt += r.amt; o.n.add(r.part); o.inv.add(r.inv); }
+  if (pf) for (const r of (R ? filt(pf).filter(r => r.o >= la && r.o <= lb) : filt(pf, { upto: c.lyUpto }))) { const k = kf(r); let o = m.get(k); if (!o) { o = { k, part: r.part, desc: r.desc, pc: r.pc, cc: r.cc, qty: 0, amt: 0, ly: 0, n: new Set(), inv: new Set() }; m.set(k, o); } o.ly += r.amt; }
   let list = [...m.values()]; const q = P.q.toLowerCase(); if (q) list = list.filter(o => (o.part + ' ' + o.desc + ' ' + o.pc + ' ' + o.cc).toLowerCase().includes(q));
-  const keys = { k: o => o.k, desc: o => o.desc, pc: o => o.pc, qty: o => o.qty, amt: o => o.amt, rate: o => o.qty ? o.amt / o.qty : 0, ly: o => o.ly, g: o => o.ly ? o.amt / o.ly : -1e9 };
+  const keys = { k: o => o.k, desc: o => o.desc, pc: o => o.pc, qty: o => qv(o), amt: o => o.amt, rate: o => o.qty ? o.amt / o.qty : 0, ly: o => o.ly, g: o => o.ly ? o.amt / o.ly : -1e9 };
   const sk = keys[P.sort] || keys.amt; list.sort((a, b) => { const x = sk(a), y = sk(b); return (x > y ? 1 : x < y ? -1 : 0) * P.dir; });
   const tot = list.reduce((a, o) => a + o.amt, 0), lyt = list.reduce((a, o) => a + o.ly, 0);
   const th = (k, t, n) => `<th class="sort${n ? ' n' : ''}" data-s="${k}">${t}${P.sort === k ? (P.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
-  const head = byCat ? th('k', 'Category') + th('qty', 'Qty', 1) + `<th class="n">Parts</th>` + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1)
-    : th('k', 'Part') + th('desc', 'Description') + th('pc', 'Category') + th('qty', 'Qty', 1) + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1);
-  const row = o => byCat ? `<tr><td>${esc(o.k)}</td><td class="n">${fQ(o.qty)}</td><td class="n">${o.n.size}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : ''}</td></tr>`
-    : `<tr><td class="mono">${esc(o.part)}</td><td class="wrap-t">${esc(o.desc)}</td><td>${esc(o.pc)}</td><td class="n">${fQ(o.qty)}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : '<span class="chip dn">stopped</span>'}</td></tr>`;
-  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Products · FY ${S.fy} to date</h2><span class="note">${list.length} ${byCat ? 'categories' : 'parts'} · compared with FY ${pf || '–'} up to the same date</span>
-  <span class="sp row"><div class="seg"><button data-by="part" aria-pressed="${!byCat}">By part</button><button data-by="cat" aria-pressed="${byCat}">By category</button></div><input type="search" id="pq" placeholder="Search part, description, category" value="${esc(P.q)}" aria-label="Search products"><button class="btn" id="csvProd">Export to Excel</button></span></div>
+  const head = byCat ? th('k', 'Category') + th('qty', qLab, 1) + `<th class="n">Parts</th>` + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1)
+    : th('k', 'Part') + th('desc', 'Description') + th('pc', 'Category') + th('qty', qLab, 1) + th('amt', UNIT.name, 1) + th('rate', 'Avg rate ₹', 1) + th('ly', 'LY same period', 1) + th('g', 'Growth', 1);
+  const row = o => byCat ? `<tr><td>${esc(o.k)}</td><td class="n">${fQa(qv(o))}</td><td class="n">${o.n.size}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : ''}</td></tr>`
+    : `<tr><td class="mono">${esc(o.part)}</td><td class="wrap-t">${esc(o.desc)}</td><td>${esc(o.pc)}</td><td class="n">${fQa(qv(o))}</td><td class="n"><b>${fLn(o.amt)}</b></td><td class="n">${o.qty ? nf2.format(o.amt / o.qty) : '–'}</td><td class="n muted">${o.ly ? fLn(o.ly) : '–'}</td><td class="n">${o.ly ? chipG((o.amt / o.ly - 1) * 100) : o.amt ? '<span class="chip up">new</span>' : '<span class="chip dn">stopped</span>'}</td></tr>`;
+  $('#main').innerHTML = `<div class="view"><section class="card"><div class="hd"><h2>Products · ${R ? dLabel(S.fy, R.a, R.b) : 'FY ' + S.fy + ' to ' + (S.cut != null ? fD(c.asOfT) : 'date')}</h2><span class="note">${list.length} ${byCat ? 'categories' : 'parts'} · compared with FY ${pf || '–'} ${R ? 'same dates' : 'up to the same date'}${P.qa === 'mon' ? ` · average over ${nf1.format(mo)} months` : P.qa === 'inv' ? ' · quantity per invoice the item was on' : ''}</span>
+  <span class="sp row"><div class="seg"><button data-by="part" aria-pressed="${!byCat}">By part</button><button data-by="cat" aria-pressed="${byCat}">By category</button></div><div class="seg" role="group" aria-label="Quantity shown"><button data-qa="tot" aria-pressed="${P.qa === 'tot'}">Total qty</button><button data-qa="mon" aria-pressed="${P.qa === 'mon'}">Avg / month</button><button data-qa="inv" aria-pressed="${P.qa === 'inv'}">Avg / invoice</button></div><input type="search" id="pq" placeholder="Search part, description, category" value="${esc(P.q)}" aria-label="Search products"><button class="btn" id="csvProd">Export to Excel</button></span></div>
   <div class="tbl-wrap"><table><thead><tr>${head}</tr></thead><tbody>${list.slice(0, P.n).map(row).join('') || '<tr><td colspan="8" class="empty">Nothing matches</td></tr>'}</tbody>
   <tfoot><tr><td colspan="${byCat ? 3 : 4}">Total (${list.length})</td><td class="n">${fLn(tot)}</td><td></td><td class="n muted">${fLn(lyt)}</td><td class="n">${lyt ? chipG((tot / lyt - 1) * 100) : ''}</td></tr></tfoot></table></div>
   ${list.length > P.n ? `<div class="more"><button class="btn" id="pmore">Show ${Math.min(150, list.length - P.n)} more of ${list.length - P.n}</button></div>` : ''}</section></div>`;
   $('#pq').oninput = e => { P.q = e.target.value; P.n = 150; const p = e.target.selectionStart; vProducts(); const i = $('#pq'); i.focus(); i.setSelectionRange(p, p); };
   document.querySelectorAll('[data-by]').forEach(b => b.onclick = () => { P.by = b.dataset.by; P.sort = 'amt'; P.dir = -1; vProducts(); });
+  document.querySelectorAll('[data-qa]').forEach(b => b.onclick = () => { P.qa = b.dataset.qa; vProducts(); });
   document.querySelectorAll('th[data-s]').forEach(t => t.onclick = () => { const k = t.dataset.s; if (P.sort === k) P.dir *= -1; else { P.sort = k; P.dir = ['k', 'desc', 'pc'].includes(k) ? 1 : -1; } vProducts(); });
   const pm = $('#pmore'); if (pm) pm.onclick = () => { P.n += 150; vProducts(); };
-  $('#csvProd').onclick = () => download(`PMI_products_${S.fy}.xlsx`, [byCat ? ['Category', 'Qty', 'Amount', 'LY same period'] : ['Part', 'Description', 'Category', 'Qty', 'Amount', 'Avg rate', 'LY same period'], ...list.map(o => byCat ? [o.k, o.qty, o.amt.toFixed(2), o.ly.toFixed(2)] : [o.part, o.desc, o.pc, o.qty, o.amt.toFixed(2), o.qty ? (o.amt / o.qty).toFixed(2) : '', o.ly.toFixed(2)])]);
+  $('#csvProd').onclick = () => download(`PMI_products_${S.fy}.xlsx`, [byCat ? ['Category', 'Qty', 'Avg qty / month', 'Avg qty / invoice', 'Amount', 'LY same period'] : ['Part', 'Description', 'Category', 'Qty', 'Avg qty / month', 'Avg qty / invoice', 'Invoices', 'Amount', 'Avg rate', 'LY same period'], ...list.map(o => { const am = (o.qty / mo).toFixed(1), ai = o.inv.size ? (o.qty / o.inv.size).toFixed(1) : ''; return byCat ? [o.k, o.qty, am, ai, o.amt.toFixed(2), o.ly.toFixed(2)] : [o.part, o.desc, o.pc, o.qty, am, ai, o.inv.size, o.amt.toFixed(2), o.qty ? (o.amt / o.qty).toFixed(2) : '', o.ly.toFixed(2)]; })]);
 }
 
 function vInvoices() {
@@ -1328,22 +1335,25 @@ function toast(t) { let el = document.getElementById('toast'); if (!el) { el = d
 const VIEWS = { users: vUsers, dashboard: vDashboard, monthly: vMonthly, customers: vCustomers, products: vProducts, invoices: vInvoices, targets: vTargets, data: vData };
 function buildFilters() {
   $('#fySeg').innerHTML = FYS.slice().reverse().map(f => `<button data-fy="${f}" aria-pressed="${f === S.fy}">${f}</button>`).join('');
-  document.querySelectorAll('[data-fy]').forEach(b => b.onclick = () => { S.fy = b.dataset.fy; S.dm = null; S.dr = null; S.inv.open.clear(); refreshAll(); });
+  document.querySelectorAll('[data-fy]').forEach(b => b.onclick = () => { S.fy = b.dataset.fy; S.cut = null; S.dm = null; S.dr = null; S.inv.open.clear(); refreshAll(); });
   const ccs = [...new Set(FYS.flatMap(f => DATA[f].rows.map(r => r.cc)))].sort();
   if (S.cc !== 'All' && !ccs.includes(S.cc)) S.cc = 'All';
   $('#fCC').innerHTML = `<option value="All">All customers</option>` + ccs.map(p => `<option ${p === S.cc ? 'selected' : ''}>${esc(p)}</option>`).join('');
   $('#fCC').value = S.cc; $('#fCore').checked = S.core;
   { const c2 = ctx(S.fy), hv = new Set(filt(S.fy).map(r => r.m)), fm2 = $('#fMonth');
     fm2.innerHTML = `<option value="all">Full year</option>` + MON.map((n, i) => `<option value="${i}" ${(!c2.closed && i > c2.cm) || !hv.has(i) ? 'disabled' : ''}>${n} ${+S.fy.slice(0, 4) + (i >= 9 ? 1 : 0)}</option>`).join('');
-    fm2.value = S.dm == null ? 'all' : String(S.dm); const showT = ['dashboard', 'invoices'].includes(S.view); $('#fMonthWrap').hidden = !showT; $('#fDateWrap').hidden = !showT;
+    fm2.value = S.dm == null ? 'all' : String(S.dm); const showT = ['dashboard', 'invoices'].includes(S.view); $('#fMonthWrap').hidden = !showT; $('#fDateWrap').hidden = !['dashboard', 'invoices', 'products', 'customers'].includes(S.view);
+    { const fu = $('#fUpto'); fu.min = o2iso(S.fy, 0); fu.max = o2iso(S.fy, DATA[S.fy].asOfO); fu.value = S.cut != null ? o2iso(S.fy, Math.min(S.cut, DATA[S.fy].asOfO)) : ''; $('#fUptoClr').hidden = S.cut == null; $('#fUptoWrap').hidden = ['targets', 'data', 'users'].includes(S.view); }
     const mn = o2iso(S.fy, 0), mx = o2iso(S.fy, c2.asOfO), f1 = $('#fFrom'), f2 = $('#fTo');
     f1.min = f2.min = mn; f1.max = f2.max = mx; f1.value = S.dr ? o2iso(S.fy, S.dr.a) : ''; f2.value = S.dr && S.dr.b !== S.dr.a ? o2iso(S.fy, S.dr.b) : ''; $('#fDateClr').hidden = !S.dr; }
-  const c = ctx(S.fy); $('#asof').textContent = `FY ${S.fy} data up to ${fD(c.asOfT)}`;
+  const c = ctx(S.fy); $('#asof').textContent = S.cut != null ? `FY ${S.fy} shown up to ${fD(c.asOfT)} (latest ${fD(DATA[S.fy].asOfT)})` : `FY ${S.fy} data up to ${fD(c.asOfT)}`;
 }
 $('#fCC').onchange = e => { S.cc = e.target.value; refreshAll(); };
 function onDates() { const a = iso2o(S.fy, $('#fFrom').value), b = iso2o(S.fy, $('#fTo').value); if (a == null && b == null) { S.dr = null; refreshAll(); return; } setDates(a ?? b, b ?? a); }
 $('#fFrom').onchange = onDates; $('#fTo').onchange = onDates;
 $('#fDateClr').onclick = () => { S.dr = null; refreshAll(); };
+$('#fUpto').onchange = e => { const o = iso2o(S.fy, e.target.value); S.cut = o == null ? null : Math.max(0, Math.min(o, DATA[S.fy].asOfO)); if (S.cut != null && S.cut >= DATA[S.fy].asOfO) S.cut = null; if (S.dr && S.cut != null) { S.dr.a = Math.min(S.dr.a, S.cut); S.dr.b = Math.min(S.dr.b, S.cut); } S.dm = null; refreshAll(); };
+$('#fUptoClr').onclick = () => { S.cut = null; refreshAll(); };
 $('#fMonth').onchange = e => { S.dr = null; S.dm = e.target.value === 'all' ? null : +e.target.value; S.ms.q = ''; S.ms.n = 200; refreshAll(); };
 $('#fCore').onchange = e => { S.core = e.target.checked; refreshAll(); };
 const TILE_IC = {
